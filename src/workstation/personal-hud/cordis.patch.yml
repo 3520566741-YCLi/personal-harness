@@ -1,0 +1,6 @@
+# dsh-personal-hud bundle patch: one host row over the profile.
+# The client bundle renders the status bar + inspector as self-managed DOM
+# overlays (no official slot seats are touched).
+- insert:
+    - id: personal-hud
+      name: dsh-personal-hud
