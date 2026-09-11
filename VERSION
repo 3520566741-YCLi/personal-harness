@@ -1,0 +1,16 @@
+Personal Harness V1.1
+release tag: public-v1.1
+built: 2026-09-11T18:01:43.689Z
+host: DSH Desktop 2.0.5 (compatibility mode; no official code patched)
+
+packages (component versions are intentionally separate from the product version):
+  dsh-personal-sidebar  0.1.24  sha256(client.js)=9df77ae3e639c4d5…  sha256(tgz)=14db80ec042f4ae7…
+  dsh-personal-workspace  0.1.20  sha256(client.js)=22fa0b73ec80f855…  sha256(tgz)=ccac9a4b71fbb603…
+  dsh-personal-hud  0.1.3  sha256(client.js)=76824e80b273adda…  sha256(tgz)=c70fa861201ea3e3…
+
+embedded build commits: sidebar=a4a2092  workspace=a4a2092  hud=(not embedded)
+
+install:   bash scripts/install.sh
+verify:    npm run verify
+uninstall: bash scripts/uninstall.sh
+rollback:  bash scripts/rollback.sh

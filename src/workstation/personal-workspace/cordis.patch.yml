@@ -1,0 +1,4 @@
+# dsh-personal-workspace bundle patch: one host row over the profile.
+- insert:
+    - id: personal-workspace
+      name: dsh-personal-workspace

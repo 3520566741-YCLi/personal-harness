@@ -1,0 +1,7 @@
+# dsh-personal-sidebar bundle patch: one host row over the profile.
+# The client bundle (client.js) then registers the Personal browsing region
+# into the official `sidebar.workspaces` slot with a shadowing priority and
+# exposes a footer-action toggle back to the official Workspace browser.
+- insert:
+    - id: personal-sidebar
+      name: dsh-personal-sidebar

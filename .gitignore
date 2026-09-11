@@ -1,0 +1,44 @@
+# --- dependencies / build outputs (never committed) ---
+node_modules/
+src/workstation/*/build/
+src/workstation/*/dist/
+*.tgz.tmp
+.npmcache/
+.npm-cache/
+.pnpm-store/
+.yarn/
+
+# --- OS / editor noise ---
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+
+# --- local install / test scratch (never part of the distribution) ---
+.local-install-test/
+*.log
+install-report-*.txt
+rollback-report-*.txt
+
+# --- user data must never be added to this repository ---
+#    Personal Harness stores user data in DSH's own storages under $HOME/.dsh.
+#    Nothing from $HOME/.dsh (profiles, storages, sessions, task ledger,
+#    project registry, guard backups, cookies) may be committed here.
+.dsh/
+sessions/
+registry.local.json
+*.db
+*.sqlite
+*.sqlite3
+Cookies*
+
+# --- secrets ---
+.env
+.env.*
+*.pem
+*.key
+.npmrc
+
+# PowerShell 运行缓存（pwsh 会在脚本目录写下启动配置文件缓存，属运行产物）
+StartupProfileData-*

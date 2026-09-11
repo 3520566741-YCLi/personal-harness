@@ -1,0 +1,5 @@
+{
+  "$schema": "draft-01",
+  "note": "Personal Harness public distribution: agent catalog seed is intentionally EMPTY (agent presets are not part of this distribution).",
+  "agents": []
+}

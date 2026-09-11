@@ -1,0 +1,77 @@
+{
+  "product": "Personal Harness",
+  "productVersion": "V1.1",
+  "releaseTag": "public-v1.1",
+  "releaseKind": "public distribution (source-available, install from this repository)",
+  "builtAt": "2026-09-11T18:01:43.689Z",
+  "builtFrom": {
+    "repository": "this repository",
+    "commitAtPackaging": "a4a2092 (this release commit itself; full id = git rev-parse HEAD)",
+    "releaseCommitSelfEmbedded": true,
+    "workingTreeDirtyAtPackaging": false,
+    "note": "自引用发行提交：打包在提交创建之前完成，打包内容即该提交的 tree；产物内嵌短哈希 = 该提交自身短哈希（逐包实测，见 plugins[].embeddedCommit）。workingTreeDirtyAtPackaging=false 的含义是：不存在提交之外的任何 tracked 改动。"
+  },
+  "sourceDerivation": "Derived from the internal Personal Harness V1.1 freeze; sanitized for public distribution (see PUBLIC_EXPORT_ALLOWLIST.md and docs/PUBLIC_SANITIZATION_REPORT.md).",
+  "hostCompat": {
+    "app": "DSH Desktop",
+    "supported": "2.0.5",
+    "testedRange": "2.0.x (compatibility mode)"
+  },
+  "install": {
+    "mode": "pnpm add file:<packages/*.tgz> inside the DSH Desktop profile",
+    "profileDefault": "$HOME/.dsh/profiles/desktop",
+    "script": "scripts/install.sh",
+    "helpers": {
+      "uninstall": "scripts/uninstall.sh",
+      "rollback": "scripts/rollback.sh",
+      "verify": "scripts/verify-release.mjs"
+    }
+  },
+  "plugins": [
+    {
+      "dir": "personal-sidebar",
+      "name": "dsh-personal-sidebar",
+      "componentVersion": "0.1.24",
+      "tgz": "packages/dsh-personal-sidebar-0.1.24-public-v1.1.tgz",
+      "tgzBytes": 24210,
+      "tgzSha256": "14db80ec042f4ae78ba651f2fde98853b9348f5836187a01d2e04f773632fc5b",
+      "clientJsSha256": "9df77ae3e639c4d5a4b0096c309c3f430c21243733c6058399c7094e05c977ea",
+      "entryJsSha256": "ac4da641bb4cca30e69503acbd79fbbb846346731532a6beceab0a215307d8d6",
+      "embeddedCommit": "a4a2092",
+      "embeddedCommitSource": "artifact-embedded",
+      "embeddedCommitNote": "内嵌于产物（构建时注入）。"
+    },
+    {
+      "dir": "personal-workspace",
+      "name": "dsh-personal-workspace",
+      "componentVersion": "0.1.20",
+      "tgz": "packages/dsh-personal-workspace-0.1.20-public-v1.1.tgz",
+      "tgzBytes": 82075,
+      "tgzSha256": "ccac9a4b71fbb603d175f177c99e2157efbf43aa9310a42b889c4194ba784842",
+      "clientJsSha256": "22fa0b73ec80f855f8ad3a8a0d11073a0c7b20a910ab4a2d896dbbce51a206d6",
+      "entryJsSha256": "1574740b09c1d7107e6965b8755cf070d91113186adbd1e7791334108af8d296",
+      "embeddedCommit": "a4a2092",
+      "embeddedCommitSource": "artifact-embedded",
+      "embeddedCommitNote": "内嵌于产物（构建时注入）。"
+    },
+    {
+      "dir": "personal-hud",
+      "name": "dsh-personal-hud",
+      "componentVersion": "0.1.3",
+      "tgz": "packages/dsh-personal-hud-0.1.3-public-v1.1.tgz",
+      "tgzBytes": 7870,
+      "tgzSha256": "c70fa861201ea3e35426ab75eefbede8cf090f163e4b47e30cadf65317bc9511",
+      "clientJsSha256": "76824e80b273addad091d304676431257691985dcdf02051ee1ba4586e7ab79d",
+      "entryJsSha256": "4074825075d84b2c0b3f3be86bbc27b61441a670f61f7266051a43b27af4d4c8",
+      "embeddedCommit": null,
+      "embeddedCommitSource": "not-embedded",
+      "embeddedCommitNote": "该产物未内嵌构建提交（其 build 未注入构建哈希）——这是实测事实，不得用其它包的值填充。"
+    }
+  ],
+  "checksums": "checksums.sha256",
+  "verify": "npm run verify",
+  "reproducibility": {
+    "clientJs": "Deterministic: same source + same commit → identical bytes (see docs/PUBLIC_SANITIZATION_REPORT.md for the byte-level equivalence proof against the internal freeze).",
+    "tgz": "Not guaranteed byte-identical across runs (npm pack embeds file timestamps) → compare clientJsSha256 for content identity."
+  }
+}
