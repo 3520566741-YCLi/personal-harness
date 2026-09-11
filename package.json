@@ -1,0 +1,25 @@
+{
+  "name": "dsh-personal-harness",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Personal Harness — a personal AI workstation layer for DSH Desktop: Home, conversation list, task board, projects and workspaces, rendered through official extension points (no official code is patched).",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build:sidebar && npm run build:workspace && npm run build:hud",
+    "build:sidebar": "node src/workstation/personal-sidebar/build.mjs",
+    "build:workspace": "node src/workstation/personal-workspace/build.mjs",
+    "build:hud": "node src/workstation/personal-hud/build.mjs",
+    "package": "node scripts/package-release.mjs",
+    "verify": "node scripts/materialize-build.mjs && node scripts/verify-release.mjs",
+    "compat": "node scripts/compat-check.mjs",
+    "test": "node scripts/materialize-build.mjs && node scripts/test-artifacts.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "jsdom": "^24.1.3"
+  }
+}

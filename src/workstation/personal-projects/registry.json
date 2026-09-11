@@ -1,0 +1,5 @@
+{
+  "$schema": "draft-01",
+  "note": "Personal Harness public distribution: project seed is intentionally EMPTY. First install starts with a blank user state; add your own projects from the UI.",
+  "projects": []
+}

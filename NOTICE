@@ -1,0 +1,30 @@
+# NOTICE
+
+**Personal Harness V1.1 — Public Distribution**
+Release tag `public-v1.1`
+
+Copyright (c) 2026 Personal Harness Authors.
+
+本发行版以 MIT 许可发布，全文见 [LICENSE](LICENSE)。
+
+## 这份代码从哪里来
+
+本仓库是**独立的新仓库**，历史从一次初始提交开始。它是内部 Personal Harness V1.1 冻结版经**白名单导出 + 中性化清洗**后的公开发行子集：
+
+- 不含私人开发历史、不含内部验收记录、不含任何用户数据；
+- 不含任何官方 DSH Desktop 源码（兼容模式：只用官方扩展点，官方代码零补丁）；
+- 被有意排除的官方同源预设模板见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)；
+- 逐文件的导出/排除清单见 [PUBLIC_EXPORT_ALLOWLIST.md](PUBLIC_EXPORT_ALLOWLIST.md)；
+- 逐处差异与证据见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md)。
+
+## 前置依赖（不随本发行版分发）
+
+DSH Desktop（本发行版在其 profile 中安装插件）。请从官方渠道获取，并遵守其自身许可条款。本仓库不包含、不修改、不重分发其任何文件。
+
+## 关于版权持有者名称
+
+`LICENSE` 中的持有者写作 `Personal Harness Authors`（中性名称，不含个人姓名与账号）。若你要在此基础上再分发或改作自己的版本，请把该行替换为你自己的名称/组织——MIT 许可允许这样做。
+
+## 商标
+
+「DSH」「DeepSeek」等名称与标识归其各自所有者所有。本项目是**非官方的第三方插件集合**，与 DSH Desktop 的开发者没有隶属或背书关系。
