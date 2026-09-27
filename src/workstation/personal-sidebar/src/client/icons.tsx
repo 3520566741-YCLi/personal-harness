@@ -100,3 +100,37 @@ export function BoardIcon({ size = 14 }: IconProps): JSX.Element {
     </svg>
   )
 }
+
+/**
+ * 智能体图标（V1.2-G · Agent Center）——「能自己干活的主体」语义：
+ * 头部轮廓 + 天线 + 双眼，区别于 Folder/Board（物件）与 Chat（会话）。
+ */
+export function AgentIcon({ size = 14 }: IconProps): JSX.Element {
+  return (
+    <svg {...base(size)}>
+      <path d="M8 1.4v1.9" />
+      <circle cx="8" cy="1.3" r="0.6" />
+      <rect x="3" y="3.3" width="10" height="7.2" rx="2.2" />
+      <path d="M6 6.7h.01" />
+      <path d="M10 6.7h.01" />
+      <path d="M6.3 11.4v1.5" />
+      <path d="M9.7 11.4v1.5" />
+    </svg>
+  )
+}
+
+/**
+ * V1.2-E2 · 记忆树入口图标：一个"根 + 两条分支"的层级图形
+ * （与记忆树实际形状一致：工作区 → 会话 → 轮次，不是通用"云/脑"臆造符号）。
+ */
+export function MemoryIcon({ size = 14 }: IconProps): JSX.Element {
+  return (
+    <svg {...base(size)}>
+      <circle cx="3.2" cy="8" r="1.7" />
+      <circle cx="12.8" cy="4" r="1.7" />
+      <circle cx="12.8" cy="12" r="1.7" />
+      <path d="M4.9 8h3.1V4h3.1" />
+      <path d="M8 8v4h3.1" />
+    </svg>
+  )
+}

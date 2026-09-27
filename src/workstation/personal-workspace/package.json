@@ -1,6 +1,6 @@
 {
   "name": "dsh-personal-workspace",
-  "version": "0.1.20",
+  "version": "0.1.25",
   "description": "Personal Harness workspace host — Home / New task composer / Task board / Project & Workspace centers rendered into the official center view.",
   "license": "MIT",
   "private": true,
@@ -28,6 +28,16 @@
   },
   "files": [
     "index.js",
+    "context.js",
+    "mirror.js",
+    "project-context.mjs",
+    "memory-context.mjs",
+    "memory-source.js",
+    "memory-tree.js",
+    "memory-graph.mjs",
+    "memory-curator.js",
+    "memory-curator.mjs",
+    "chatgpt-embed-probe.js",
     "client.js",
     "cordis.patch.yml"
   ]

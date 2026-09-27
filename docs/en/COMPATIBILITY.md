@@ -37,18 +37,20 @@ Want to try an unverified version? Run `--dry-run` first to see the actions, the
 | Item | Value |
 |---|---|
 | Host | DSH Desktop **2.0.5** @ `/Applications/DSH Desktop.app` |
-| Host integration | compatibility mode — **zero patches to official code** (all three plugins hook in through official extension points) |
+| Host integration | compatibility mode — **zero patches to official code** (all four plugins hook in through official extension points) |
 | OS | macOS |
 | Node.js | ≥ 20 (24.16.0 used for this build/test run) |
 | pnpm | used for profile dependency management (11.8.0 in this run) |
-| Components | sidebar 0.1.24 / workspace 0.1.20 / hud 0.1.3 |
+| Components (four plugins) | sidebar 0.1.28 / workspace 0.1.25 / hud 0.1.3 / quickstop 0.1.1 |
+
+What each plugin does (`dsh-personal-quickstop` is new in 0.1.1): `sidebar` = the Personal sidebar navigation; `workspace` = the centre-area pages (Home / Conversations / Task Board / Projects / Workspaces and so on); `hud` = the bottom status bar; **`quickstop` = Quick Stop — graceful interruption and resumption of background tasks**. Product version **Personal Harness V1.2** (release tag `public-v1.2`, macOS release).
 
 ## How far the coverage goes (honest accounting)
 
 | Verified | Evidence |
 |---|---|
-| Full install → reinstall (idempotent) → compatibility gate → uninstall → rollback in an **isolated synthetic profile**; 22 assertions, all passed | docs/PUBLIC_INSTALL_TEST_REPORT.md (currently Chinese-only) |
-| 57 artifact contract tests (57 under each of the two `NODE_ENV` settings) | `npm run test` |
+| Full install → reinstall (idempotent) → compatibility gate → uninstall → rollback in an **isolated synthetic profile**; 22 assertions, all passed (that report comes from the **V1.1** public release; there is **no equivalent V1.2 report in this repository**, so this item is **unverified** for V1.2) | docs/PUBLIC_INSTALL_TEST_REPORT.md (currently Chinese-only) |
+| **71** artifact contract tests (four packages; run under both the `development` and `production` `NODE_ENV` settings, 0 failures each) | `npm run test` |
 | After install, `client.js` inside the profile is **byte-for-byte identical** to the distribution package | `install.sh` step 7 / `npm run verify` |
 | Distribution package sha256 matches `manifest.json` | `npm run verify` |
 
@@ -57,5 +59,5 @@ Want to try an unverified version? Run `--dry-run` first to see the actions, the
 | Opening the public build in a **real desktop session** and confirming the UI by eye | Requires restarting the host on real hardware; not performed for this release (see [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)) |
 | Running on any host version other than 2.0.5 | No device and no such version available; the verdict is always UNTESTED |
 | **Every part of Windows** (install / UI / uninstall / rollback) | No Windows environment here; only PowerShell syntax parsing plus a logic drill run on a non-Windows machine — that does not prove how it behaves on Windows (see docs/WINDOWS_EXPERIMENTAL_STATUS.md, currently Chinese-only) |
-| Upgrading from "the previous public release" | This is the **first** public release, so there is no previous public release to upgrade from → this test item is N/A (not PASS) |
+| Upgrading from the previous public release (V1.1) to V1.2 | **No verification evidence for that upgrade path exists in this repository** → treated as **unverified** (never reported as PASS) |
 | Memory / performance under long-running use | Not measured |

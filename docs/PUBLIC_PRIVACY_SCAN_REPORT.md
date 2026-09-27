@@ -1,8 +1,8 @@
 # PUBLIC PRIVACY SCAN REPORT
 
 - 扫描对象：**将要公开的集合** = `git ls-files`（该仓库的全部被跟踪文件）
-- 仓库：`personal-harness`（公开发行仓库，独立历史）｜HEAD `a4a2092（自引用发行提交：产物内嵌短哈希 = 该提交自身短哈希）`｜扫描时间 2026-09-11T18:02:35.056Z
-- 文本文件数：**103**｜文本总字节：994937
+- 仓库：`personal-harness`（公开发行仓库，独立历史）｜HEAD `bcf7e4a`｜扫描时间 2026-09-27T07:14:34.286Z
+- 文本文件数：**147**｜文本总字节：1877827
 - 结论：**CLEAN（无 blocker）**
 
 ## 判定口径
@@ -18,23 +18,28 @@
 
 | 类别 | 命中 | blocker | false positive |
 |---|---|---|---|
-| privacy（个人标识 / 路径） | 0 | 0 | 0 |
+| privacy（个人标识 / 路径） | 2 | 0 | 2 |
 | secret（凭据） | 0 | 0 | 0 |
-| userdata（用户数据引用） | 8 | 0 | 6 |
+| userdata（用户数据引用） | 11 | 0 | 7 |
 | license（许可相关） | 0 | 0 | 0 |
 
 ## 逐条命中
 
 | path | line | 规则 | 命中 | 判定 | 处理 |
 |---|---|---|---|---|---|
+| `THIRD_PARTY_NOTICES.md` | 37 | U-03 个人数据目录引用 | `task-board/ledger-v2.json` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
 | `UNINSTALL.md` | 28 | U-03 个人数据目录引用 | `.dsh/.personal/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
 | `UNINSTALL.md` | 34 | U-03 个人数据目录引用 | `.dsh/sessions/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
-| `docs/PUBLIC_SANITIZATION_REPORT.md` | 86 | U-03 个人数据目录引用 | `.dsh/sessions/` | FALSE-POSITIVE-OK | 允许保留（说明见下） |
+| `docs/PUBLIC_SANITIZATION_REPORT.md` | 96 | P-02 GitHub 账号 / 用户名 | `YCLi` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
+| `docs/PUBLIC_SANITIZATION_REPORT.md` | 96 | P-05 本机私人工作区名 | `Harness工作区` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
 | `docs/en/UNINSTALL.md` | 28 | U-03 个人数据目录引用 | `.dsh/.personal/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
 | `docs/en/UNINSTALL.md` | 34 | U-03 个人数据目录引用 | `.dsh/sessions/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
-| `scripts/uninstall.sh` | 59 | U-03 个人数据目录引用 | `.dsh/.personal/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
-| `scripts/uninstall.sh` | 64 | U-03 个人数据目录引用 | `.dsh/sessions/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
+| `scripts/uninstall.sh` | 62 | U-03 个人数据目录引用 | `.dsh/.personal/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
+| `scripts/uninstall.sh` | 67 | U-03 个人数据目录引用 | `.dsh/sessions/` | FALSE POSITIVE | 文档/脚本里的通用占位写法 |
+| `src/workstation/personal-quickstop/server/discovery.mjs` | 358 | U-03 个人数据目录引用 | `task-board/ledger-v2.json` | FALSE-POSITIVE-OK | 允许保留（说明见下） |
+| `src/workstation/personal-quickstop/server/task-source.mjs` | 67 | U-03 个人数据目录引用 | `task-board/ledger-v2.json` | FALSE-POSITIVE-OK | 允许保留（说明见下） |
 | `src/workstation/personal-workspace/src/client/task-extras.ts` | 4 | U-03 个人数据目录引用 | `task-board/ledger-v2.json` | FALSE-POSITIVE-OK | 允许保留（说明见下） |
+| `src/workstation/personal-workspace/src/client/workspace-tasks.ts` | 20 | U-03 个人数据目录引用 | `task-board/ledger-v2.json` | FALSE-POSITIVE-OK | 允许保留（说明见下） |
 
 ## 导出阶段已完成的中性化（REDACTED）
 

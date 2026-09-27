@@ -2,6 +2,59 @@
 
 本文件只记录**公开发行**的历史。内部开发过程（阶段编号、内部验收记录）不在本仓库内，也不对外表达。
 
+## v1.2.0 — public-v1.2（macOS）
+
+**定位：功能最全，但未做系统性验收。** V1.2 是「功能最全、但没有做过系统性验收」的版本，它**带有若干已知问题**，这些问题**计划在 V1.3 修复**；完整清单（现象 / 影响面 / 当前状态 / 规避方式）见 [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)。**要稳定请用 V1.1（发行 git tag `v1.1.0-macos`）；要功能最全并接受已知问题，用 V1.2（本次发行，git tag `public-v1.2`）。**
+
+新增：
+
+- **Quick Stop** 在官方会话头部提供「优雅中断 + 续接」。它是本次新增的**第四个包** `dsh-personal-quickstop` **0.1.1**（V1.1 是三个包）。
+- 其余三个包为版本更新：`dsh-personal-sidebar` 0.1.28、`dsh-personal-workspace` 0.1.25、`dsh-personal-hud` 0.1.3。
+
+组件版本（本版发行物）：
+
+| 包 | 版本 |
+|---|---|
+| `dsh-personal-sidebar` | 0.1.28 |
+| `dsh-personal-workspace` | 0.1.25 |
+| `dsh-personal-hud` | 0.1.3 |
+| `dsh-personal-quickstop` | 0.1.1 |
+
+`scripts/install.sh` 会**自动发现并安装 `packages/` 下的全部四个 `.tgz`**，无需改参数。完整哈希见 `manifest.json` 与 `checksums.sha256`。
+
+发行物哈希（`client.js` 的 sha256，实测回填；完整值见 `manifest.json`）：
+
+| 包 | 版本 | 公开 `sha256(client.js)` | 与内部冻结版的关系 |
+|---|---|---|---|
+| dsh-personal-sidebar | 0.1.28 | `6a0886038128fec2…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+| dsh-personal-workspace | 0.1.25 | `34c992e21de70c5c…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+| dsh-personal-hud | 0.1.3 | `56afe08499d2f585…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+| dsh-personal-quickstop | 0.1.1 | `ba9748698e0b7c9b…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+
+本版本是**自引用发行提交**：`packages/*.tgz` 内嵌的短提交哈希（`ba9a5bb`）== 包含它们的那个提交自身的短哈希。`npm run verify` 会强制核验，不一致即失败。
+
+发行范围：**仅 macOS**。本次发行只提供 macOS 安装路径；仓库里保留的 Windows 脚本与文档仍是**上一版 V1.1 的实验性材料**，**未用 V1.2 的包验证过**，**不要用它们安装 V1.2 的包**（见 [INSTALL_WINDOWS_EXPERIMENTAL.md](INSTALL_WINDOWS_EXPERIMENTAL.md) 顶部声明）。Windows 不属于本发行范围。
+
+公开版清洗说明：
+
+- 发行物**不含任何私人数据**：无本机路径、无账号、无密钥、无会话 id；
+- 公开版的**项目种子为空**——首次安装即空白状态（项目、Agent 目录都由你自己填）；
+- `quickstop` 新增了一行**产品归属标注**（悬停可见）。
+
+已知问题摘要（最重的几条，详表见 [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)）：
+
+1. Quick Stop 的续接卡片在显示「已受理」后**永不消失**，界面上没有关闭手段（重启 DSH Desktop 可让它消失）；
+2. 「记忆每 30 分钟自动整理」**从来没有成功跑过一次**，而且界面**不会告诉你它没成功**；
+3. 界面上的**产品版本显示可能与实际安装的产品版本不一致**；
+4. Quick Stop / 续接的**像素与手感从未在真机复核**（自动化套件证明不了手感）；
+5. Quick Stop 停掉的任务在看板上**没有「被中断」这个状态**，只能落到官方五个状态。
+
+诚实说明（本次发行**没有**做的事）：
+
+- **未做**真机肉眼验收（没有在真实桌面会话里逐项看过界面）；
+- **未验证** V1.1 → V1.2 的升级路径；
+- **未测**四个包的**可复现构建**（源码能否逐字节重建出这四个 `.tgz`）。
+
 ## v1.1.0-macos-docs.2 — 英文文档版（产品功能未变）
 
 **这不是功能更新，也不是安全修复，更与 Windows 支持无关。** 产品功能、界面行为与源码都没有变化；本次只新增了一整套英文使用文档，让英文用户从 GitHub 首页进入后可以全程用英文阅读和安装。

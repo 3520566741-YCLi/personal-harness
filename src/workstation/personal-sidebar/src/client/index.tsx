@@ -9,6 +9,7 @@ import { CSS } from './styles'
 import { personalMode, usePersonalMode } from './controller'
 import { PersonalBrowser } from './PersonalBrowser'
 import { SwitcherIcon } from './icons'
+import { adoptThoughtSwitcher } from './thoughtdagSwitch'
 import { PersonalBrandName } from './brand'
 import { buildSelfCheckReport, diagPkgTick } from './diag'
 
@@ -402,6 +403,41 @@ function applyInner(ctx: LooseCtx): boolean {
     mounted = false
   }
 
+  /**
+   * 会话行状态点 · 第二条真源（**会话级**待交互，2026-09-14 用户收口）。
+   * 官方 Host 在 `dsh-client-ui-session` 里把这份 store 作为 root hook 暴露
+   * （`provideRoot({ hooks: { sessionPendingInteraction } })`，官方
+   * `dsh-client-ui-conversation` / `dsh-client-ui-workspace` 即用它的 `use*` 绑定）；
+   * 同一份对象也在 cordis 服务 `uiSession.pendingInteractions` 上（`getSnapshot`/`subscribe`）。
+   * 本插件按既有惯例（`sessions` / `workspaces` 同款）从服务面**只读**接它：
+   *   · 不写进 inject（未注册的服务会让插件 park）；运行时逐次探测，晚注册也能拿到。
+   *   · 不建第二份存储/缓存；读不到 → UI 只表达 running/idle（绝不伪造“需要你”）。
+   */
+  const pendingOf = (): unknown => {
+    const storeOf = (): { getSnapshot?: () => unknown; subscribe?: (f: () => void) => () => void } | null => {
+      try {
+        const svc = typeof ctx.get === 'function' ? (ctx.get('uiSession') as { pendingInteractions?: unknown } | undefined) : undefined
+        const p = svc?.pendingInteractions as { getSnapshot?: () => unknown; subscribe?: (f: () => void) => () => void } | undefined
+        return p && typeof p.getSnapshot === 'function' && typeof p.subscribe === 'function' ? p : null
+      } catch {
+        return null
+      }
+    }
+    return {
+      /** 官方待交互快照（Map<sessionId, PendingApproval|PendingQuestion>）；未就绪 → undefined。 */
+      getSnapshot: (): unknown => storeOf()?.getSnapshot?.() ?? undefined,
+      /** 订阅官方 store（审批出现/消失、提问出现/回答 → 官方推送，无需轮询）。 */
+      subscribe: (fn: () => void): (() => void) => {
+        try {
+          const off = storeOf()?.subscribe?.(fn)
+          return typeof off === 'function' ? off : () => {}
+        } catch {
+          return () => {}
+        }
+      },
+    }
+  }
+
   const mount = (): void => {
     if (mounted) return
     setPersonalAttr(true)
@@ -426,6 +462,8 @@ function applyInner(ctx: LooseCtx): boolean {
             },
             /** §5/§6：Sidebar 会话列表的 official Session 只读投影 + 官方打开路径。 */
             conversations: conversationsOf(),
+            /** 会话行状态点：官方 pendingInteractions（审批/提问，会话级真源）。 */
+            pending: pendingOf(),
             betterSidebar: betterSidebarOf(),
           }),
         },
@@ -496,6 +534,53 @@ function applyInner(ctx: LooseCtx): boolean {
     else unmount()
   }
 
+  // ---------------------------------------------------------------------------
+  // 「对话 / 思维图」视图开关（2026-09-14 用户真机反馈）：`dsh-thoughtdag` 把它做成宿主
+  //   页面浮层（`.dsh-td-switch`，fixed + top:12px + left:50%），悬在窗口顶端中央；用户
+  //   要求把它放进侧栏那一栏、排在第三方「任务看板」入口之上。宿主侧栏插槽里**没有**
+  //   能排在该行之前的槽位，所以由本插件在 Personal 模式下**领养**那个节点（详见
+  //   thoughtdagSwitch.ts）。切回官方模式即原样交还宿主（不留残留）。
+  //   · 纯增强：任何异常只降级为「开关保持浮动原位」，绝不影响侧栏其余部分。
+  let tabbarHandle: (() => void) | null = null
+  let tabbarMounted = false
+
+  const unmountTabbar = (): void => {
+    if (!tabbarMounted) return
+    try {
+      tabbarHandle?.()
+    } catch {
+      // best-effort: 残留节点会在页面重载后消失
+    }
+    tabbarHandle = null
+    tabbarMounted = false
+  }
+
+  const mountTabbar = (): void => {
+    if (tabbarMounted) return
+    try {
+      tabbarHandle = adoptThoughtSwitcher()
+      tabbarMounted = true
+    } catch (error) {
+      console.warn('[dsh-personal-sidebar] thoughtdag switcher adoption failed:', error)
+      tabbarHandle = null
+      tabbarMounted = false
+    }
+  }
+
+  const syncTabbar = (): void => {
+    if (personalMode.get() === 'personal') mountTabbar()
+    else unmountTabbar()
+  }
+
+  const tabbarLife = (): (() => void) => {
+    syncTabbar()
+    const off = personalMode.subscribe(syncTabbar)
+    return () => {
+      off()
+      unmountTabbar()
+    }
+  }
+
   // One stylesheet for this plugin's region.
   const injectStyles = (): void => {
     const el = document.createElement('style')
@@ -555,6 +640,12 @@ function applyInner(ctx: LooseCtx): boolean {
       ),
     'dps: footer',
   )
+
+  // 领养第三方「对话 / 思维图」开关（非插槽：直接操作 DOM，因此不用 injectSeat）。
+  step('tabbar', () => {
+    if (typeof ctx.effect === 'function') return ctx.effect(tabbarLife, 'dps: tabbar')
+    return tabbarLife()
+  })
 
   if (errors.length > 0) {
     badge('dps✗ ' + errors[0].slice(0, 42))

@@ -6,15 +6,15 @@
 Harness Web UI
     ↓ 由 DSH Desktop 承载并加载
 DSH Desktop
-    ↓ 安装三个 Personal Harness 插件
+    ↓ 安装四个 Personal Harness 插件
 Personal Harness
 ```
 
 1. 你必须**先安装并能正常启动 DSH Desktop**——这是前提，不是可选步骤；
 2. **DSH Desktop 负责承载 Harness Web UI**，并提供本地插件加载环境；
 3. **Personal Harness 不是独立 App，不是浏览器扩展，也不替代 Harness 或 DSH Desktop**；它只是装进 DSH Desktop 的一层界面/组织插件；
-4. 你下载或 clone 本仓库后，运行**对应平台**的安装脚本（macOS 用 `scripts/install.sh`，Windows 用 `scripts/windows/install.ps1`）；
-5. 安装脚本会把三个 `.tgz` 插件装进 **DSH Desktop 的本地 profile**（默认 `~/.dsh/profiles/desktop`）；
+4. 你下载或 clone 本仓库后，运行**对应平台**的安装脚本（macOS 用 `scripts/install.sh`；Windows 用 `scripts/windows/install.ps1`，但 **Windows 材料不属于 V1.2 发行范围**，见本页顶部提示）；
+5. 安装脚本会把四个 `.tgz` 插件装进 **DSH Desktop 的本地 profile**（默认 `~/.dsh/profiles/desktop`）；
 6. 装完必须**完全退出并重新启动 DSH Desktop**（⌘Q / 完全关闭，不是最小化），插件界面才会出现——插件只在宿主启动时加载；
 7. **在浏览器里单独运行的 Harness Web UI 不属于已验证的安装方式**，也不能承诺把本仓库直接套用上去就能工作（本发行版验证的是「DSH Desktop 加载本地插件」这一条路径）。
 
@@ -24,6 +24,8 @@ Personal Harness
 已验证：macOS + DSH Desktop 2.0.5
 ```
 
+> **本版本是 macOS 发行版**：Personal Harness **V1.2**（发行 tag `public-v1.2`），本次只发 macOS 版。仓库里保留的 Windows 脚本与文档**不属于本次发行范围**，也不能用来安装本版本的包（见 [INSTALL_WINDOWS_EXPERIMENTAL.md](INSTALL_WINDOWS_EXPERIMENTAL.md) 顶部说明）。
+
 ## 前置条件
 
 | 条件 | 要求 | 不满足会怎样 |
@@ -32,7 +34,7 @@ Personal Harness
 | DSH Desktop | **2.0.5** 已安装并至少启动过一次 | 判定为 UNTESTED / INCOMPATIBLE，**不会静默安装**（见 [COMPATIBILITY.md](COMPATIBILITY.md)） |
 | Node.js | ≥ 20 | `install.sh` 直接退出（退出码 1），并提示缺 node |
 | pnpm | 任意近期版本（DSH Desktop 用它管理 profile 插件） | `install.sh` 直接退出，并提示先装 pnpm |
-| 磁盘 | 约 5 MB（三个包 + 缓存） | — |
+| 磁盘 | 约 6 MB（四个包 + 缓存） | — |
 
 不需要：管理员权限（**脚本绝不会 sudo**）、不需要改官方 DSH 安装目录、不需要网络（安装阶段全部走本地文件）。
 
@@ -80,9 +82,10 @@ bash scripts/install.sh
 1. **平台检查** — macOS / node / pnpm 是否具备
 2. **定位 profile** — 默认 `$HOME/.dsh/profiles/desktop`，可用 `DSH_PROFILE=/path/to/profile` 覆盖；必须含 `package.json`
 3. **兼容性门** — 读取 DSH Desktop 版本，判定 SUPPORTED / UNTESTED / INCOMPATIBLE 并打印；UNTESTED 需显式 `--allow-untested`，INCOMPATIBLE 需 `--force`
-4. **发行物完整性** — 用 `manifest.json` + `checksums.sha256` 校验三个 `.tgz` 的 sha256（防下载损坏/被替换）
+4. **发行物完整性** — 用 `manifest.json` + `checksums.sha256` 校验四个 `.tgz` 的 sha256（防下载损坏/被替换）
 5. **创建回滚点** — 备份 profile 的 `package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`、`cordis*.yml`，并记录「安装前已装了哪些 `dsh-personal-*`」到 `installed-before.json`
-6. **安装** — 把 `packages/*.tgz` 复制到 `$HOME/.dsh/cache/`，再在 profile 内执行 `pnpm add file:$HOME/.dsh/cache/<包名>-public-v1.1.tgz`
+6. **安装** — 把 `packages/*.tgz` 复制到 `$HOME/.dsh/cache/`，再在 profile 内执行 `pnpm add file:$HOME/.dsh/cache/<包名>-public-v1.2.tgz`
+   （脚本**自动发现 `packages/*.tgz`**，四个包都会装，不需要传任何包名或版本参数）
 7. **逐字节核对** — 比对 profile 内 `node_modules/<包>/client.js` 与 `manifest.json` 记录的 sha256；不一致就报错并提示回滚
 
 成功后输出中会打印**回滚点的绝对路径**，请留一份。
@@ -127,19 +130,19 @@ DSH_PROFILE=/path/to/profile bash scripts/install.sh
 
 ```bash
 npm install            # 仅构建期依赖（esbuild / jsdom），不进发行产物
-npm run build          # 三个插件各自 esbuild 打包
+npm run build          # 四个插件各自 esbuild 打包（含 build:quickstop）
 npm run package        # 重新生成 packages/*.tgz、manifest.json、checksums.sha256、VERSION
 npm run verify         # 自查：哈希 / 装机一致性 / 无私人数据
-npm run test           # 产物契约测试（57 项）
+npm run test           # 产物契约测试（71 项，四个包）
 ```
 
 补充两点：
 
 - 只是想在 clone 后**校验**随仓库发布的包，不必先构建：`npm run verify` / `npm test` 会在发现
   `src/workstation/*/build/` 缺失时，自动从 `packages/*.tgz` 还原 bundle 并逐字节核对 `manifest.json` 的 sha256。
-- 重新构建会写入**当前 HEAD 的短哈希**到产物内嵌值。在本仓库的发行提交上重建，三个 `client.js` 与发布版**逐字节一致**
-  （已实测）；如果你在上面追加了自己的提交，内嵌短哈希随之改变，此时 `client.js` 与发布版会仅在这一处不同——
-  `npm run verify` 会告诉你是否自洽。
+- 重新构建会写入**当前 HEAD 的短哈希**到产物内嵌值。「在发行提交上重建，`client.js` 与发布版**逐字节一致**」这一结论是在 **V1.1**
+  的公开产物上**实测**过的；**V1.2 的四个包没有重做这项实测（未验证）**——`npm run verify` 只告诉你产物是否自洽，不等于本机重建比对。
+  如果你在发行提交之上追加了自己的提交，内嵌短哈希随之改变，此时 `client.js` 与发布版会仅在这一处不同。
 
 安装自定义构建：
 
@@ -154,9 +157,12 @@ PROFILE="$HOME/.dsh/profiles/desktop"
 mkdir -p "$HOME/.dsh/cache"
 cp packages/*.tgz "$HOME/.dsh/cache/"
 cd "$PROFILE"
-pnpm add file:"$HOME/.dsh/cache/dsh-personal-sidebar-0.1.24-public-v1.1.tgz"
-pnpm add file:"$HOME/.dsh/cache/dsh-personal-workspace-0.1.20-public-v1.1.tgz"
-pnpm add file:"$HOME/.dsh/cache/dsh-personal-hud-0.1.3-public-v1.1.tgz"
+pnpm add file:"$HOME/.dsh/cache/dsh-personal-sidebar-0.1.28-public-v1.2.tgz"
+pnpm add file:"$HOME/.dsh/cache/dsh-personal-workspace-0.1.25-public-v1.2.tgz"
+pnpm add file:"$HOME/.dsh/cache/dsh-personal-hud-0.1.3-public-v1.2.tgz"
+pnpm add file:"$HOME/.dsh/cache/dsh-personal-quickstop-0.1.1-public-v1.2.tgz"
 ```
+
+四个包都要装（缺任何一个，对应那部分界面就不会出现）：`sidebar` 0.1.28 ／ `workspace` 0.1.25 ／ `hud` 0.1.3 ／ `quickstop` 0.1.1（本版新增）。
 
 手动装没有回滚点，也没有装机字节核对——出问题请用 `bash scripts/rollback.sh` 之前先确认自己备份过 profile 的 `package.json`。

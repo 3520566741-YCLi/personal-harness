@@ -30,6 +30,30 @@ export interface AgentMeta {
   description: string
   /** 对应原生 preset id。 */
   presetId: string
+  // ---------------------------------------------------------------------------
+  // 专业智能体族（V1.2-G）：**可选**，只有自带技能包的专业智能体才声明。
+  // 判据 = `skillEntry` 存在（见 personal-agents/scripts/agent-registry.mjs `isProfessional`）。
+  // 人格化预设（general/coder/…）不带这些字段，消费方必须容缺 —— 不得因为缺字段而丢条目。
+  /** 技能包入口（相对 preset 目录）。存在即表示「专业智能体」。 */
+  skillEntry?: string
+  /** 技能包目录（相对 preset 目录）。 */
+  skillPack?: string
+  /** 宣传语（比 description 更完整的一句话定位）。 */
+  tagline?: string
+  /** 成熟度：UI 必须如实显示，不得把 preview/planned/blocked 画成可用。 */
+  status?: 'active' | 'preview' | 'planned' | 'blocked'
+  /** 能做什么（通用短标识符，如 research / storyboard / visual-qa）。 */
+  capabilities?: string[]
+  /** 交付流水线（有序阶段名）。 */
+  workflow?: string[]
+  /** 机器契约名 → 相对 preset 目录的路径。 */
+  contracts?: Record<string, string>
+  /** 渲染路径（同一契约的不同渲染内核；needsDependency = 需在插件声明依赖）。 */
+  renderers?: { path: string; kernel: string; nature: string; needsDependency?: boolean }[]
+  /** 硬纪律（每一条都必须可被机器或人核对）。 */
+  guarantees?: string[]
+  /** 是否专业智能体（派生：skillEntry 存在）。 */
+  professional: boolean
 }
 
 export interface ProjectMeta {
@@ -49,6 +73,16 @@ interface RawAgent {
   glyph?: unknown
   description?: unknown
   presetId?: unknown
+  // 专业智能体族（可选；容缺，缺了不丢条目）
+  skillEntry?: unknown
+  skillPack?: unknown
+  tagline?: unknown
+  status?: unknown
+  capabilities?: unknown
+  workflow?: unknown
+  contracts?: unknown
+  renderers?: unknown
+  guarantees?: unknown
 }
 interface RawProject {
   id?: unknown
@@ -75,6 +109,35 @@ function parseAgents(file: unknown): AgentMeta[] {
       console.warn('[personal-registry] drop invalid agent entry', raw)
       continue
     }
+    // 专业智能体族：逐字段容缺解析（缺项=该能力未声明，而不是"条目无效"）
+    const skillEntry = str(raw.skillEntry)
+    const capabilities = Array.isArray(raw.capabilities)
+      ? raw.capabilities.filter((c): c is string => typeof c === 'string')
+      : []
+    const workflow = Array.isArray(raw.workflow)
+      ? raw.workflow.filter((w): w is string => typeof w === 'string')
+      : []
+    const contracts: Record<string, string> = {}
+    if (raw.contracts && typeof raw.contracts === 'object' && !Array.isArray(raw.contracts)) {
+      for (const [k, v] of Object.entries(raw.contracts as Record<string, unknown>)) {
+        if (typeof v === 'string') contracts[k] = v
+      }
+    }
+    const renderers = Array.isArray(raw.renderers)
+      ? raw.renderers
+          .filter((r): r is Record<string, unknown> => Boolean(r) && typeof r === 'object')
+          .map((r) => ({
+            path: str(r.path),
+            kernel: str(r.kernel),
+            nature: str(r.nature),
+            ...(r.needsDependency === true ? { needsDependency: true } : {}),
+          }))
+          .filter((r) => r.path && r.kernel)
+      : []
+    const guarantees = Array.isArray(raw.guarantees)
+      ? raw.guarantees.filter((g): g is string => typeof g === 'string')
+      : []
+    const status = str(raw.status)
     out.push({
       id,
       name,
@@ -82,6 +145,18 @@ function parseAgents(file: unknown): AgentMeta[] {
       glyph: glyphOf(raw.glyph, name),
       description: str(raw.description),
       presetId: str(raw.presetId) || id,
+      ...(skillEntry ? { skillEntry } : {}),
+      ...(str(raw.skillPack) ? { skillPack: str(raw.skillPack) } : {}),
+      ...(str(raw.tagline) ? { tagline: str(raw.tagline) } : {}),
+      ...(status === 'active' || status === 'preview' || status === 'planned' || status === 'blocked'
+        ? { status }
+        : {}),
+      ...(capabilities.length > 0 ? { capabilities } : {}),
+      ...(workflow.length > 0 ? { workflow } : {}),
+      ...(Object.keys(contracts).length > 0 ? { contracts } : {}),
+      ...(renderers.length > 0 ? { renderers } : {}),
+      ...(guarantees.length > 0 ? { guarantees } : {}),
+      professional: skillEntry.length > 0,
     })
   }
   if (list.length === 0) console.warn('[personal-registry] agents catalog empty — UI will degrade')
@@ -114,10 +189,13 @@ function parseProjects(file: unknown): ProjectMeta[] {
   return out
 }
 
-/** 6 个 Personal Agent（顺序 = registry.json 声明顺序，稳定）。 */
+/** 全部 Personal Agent（顺序 = registry.json 声明顺序，稳定；两族共存）。 */
 export const AGENT_CATALOG: AgentMeta[] = parseAgents(agentsFile)
 /** 4 个 Personal Project 档案（顺序同上）。 */
 export const PROJECT_CATALOG: ProjectMeta[] = parseProjects(projectsFile)
+
+/** 专业智能体（自带技能包）—— Agent Center 的「专业」分组口径。 */
+export const PROFESSIONAL_AGENTS: AgentMeta[] = AGENT_CATALOG.filter((a) => a.professional)
 
 /** 默认 agent = presetId 'general'（V1 约定默认 General），缺失时退回首项。 */
 export function defaultAgentName(): string {

@@ -1,0 +1,40 @@
+{
+  "name": "dsh-personal-quickstop",
+  "version": "0.1.1",
+  "description": "Personal Harness Quick Stop — a graceful interruption control in the official conversation header, with resume records so a running task can be stopped and continued deliberately (no official slot is shadowed).",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ],
+      "platform": "web"
+    }
+  },
+  "files": [
+    "index.js",
+    "routes.mjs",
+    "interrupt-store.mjs",
+    "checkpoint-store.mjs",
+    "stop-plan.mjs",
+    "orchestrator.mjs",
+    "discovery.mjs",
+    "host-adapter.mjs",
+    "task-source.mjs",
+    "client.js",
+    "cordis.patch.yml"
+  ]
+}

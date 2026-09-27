@@ -9,10 +9,11 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "npm run build:sidebar && npm run build:workspace && npm run build:hud",
+    "build": "npm run build:sidebar && npm run build:workspace && npm run build:hud && npm run build:quickstop",
     "build:sidebar": "node src/workstation/personal-sidebar/build.mjs",
     "build:workspace": "node src/workstation/personal-workspace/build.mjs",
     "build:hud": "node src/workstation/personal-hud/build.mjs",
+    "build:quickstop": "node src/workstation/personal-quickstop/build.mjs",
     "package": "node scripts/package-release.mjs",
     "verify": "node scripts/materialize-build.mjs && node scripts/verify-release.mjs",
     "compat": "node scripts/compat-check.mjs",

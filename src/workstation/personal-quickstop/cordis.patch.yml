@@ -1,0 +1,7 @@
+# dsh-personal-quickstop bundle patch: one host row over the profile.
+# The client bundle (client.js) registers the 「快速停止」 pill into the official
+# `conversation.session.header.utilities` seat with order -1 (left of 快速重启 /
+# Session 日志). The host half owns the interrupt projection store.
+- insert:
+    - id: personal-quickstop
+      name: dsh-personal-quickstop

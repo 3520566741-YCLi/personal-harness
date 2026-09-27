@@ -70,7 +70,9 @@ fi
 # 核对：回滚后 Personal Harness 是否已按备份状态消失/回退
 say "核对："
 REMAIN=0
-for p in dsh-personal-sidebar dsh-personal-workspace dsh-personal-hud; do
+PLUGINS="$(node -e 'const m=require(process.argv[1]);process.stdout.write(((m.plugins)||[]).map((x)=>x.name).join(" "))' "${REPO}/manifest.json" 2>/dev/null || true)"
+[ -n "${PLUGINS}" ] || PLUGINS="dsh-personal-sidebar dsh-personal-workspace dsh-personal-hud dsh-personal-quickstop"
+for p in ${PLUGINS}; do
   if [ -d "${PROFILE}/node_modules/${p}" ]; then
     V="$(node -p "require('${PROFILE}/node_modules/${p}/package.json').version" 2>/dev/null || echo '?')"
     say "  · ${p} 仍存在（版本 ${V}）—— 说明回滚点里它本来就在"

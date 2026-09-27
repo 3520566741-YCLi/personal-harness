@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 目的：让「刚 clone 下来的仓库」不用先 npm run build，也能校验/测试**随仓库发布的那三个包**。
+// 目的：让「刚 clone 下来的仓库」不用先 npm run build，也能校验/测试**随仓库发布的那些包**。
 //
 // 背景：src/workstation/*/build/ 是构建产物目录，被 .gitignore 忽略，因此 clone 后并不存在；
 // 而 npm run verify / npm test 需要读 build/flat/client.js 才能核对哈希与 DOM 契约。

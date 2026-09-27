@@ -158,7 +158,7 @@
 - 不接管、不修改、不删除、不迁移你的任何 DSH 官方数据；
 - 不替你批准权限，也不自动执行高风险操作；
 - 不把未验证的东西说成可用（Windows 仍为 **Experimental / 未验证**，见 [INSTALL_WINDOWS_EXPERIMENTAL.md](INSTALL_WINDOWS_EXPERIMENTAL.md)）；
-- 没有网络请求、没有遥测、没有账号、没有密钥（见 [PRIVACY.md](PRIVACY.md)）。
+- 默认不向任何外部主机发起请求（唯一例外：你主动打开右栏「ChatGPT」标签时的一次匿名只读探测）、没有遥测、没有账号、没有密钥（见 [PRIVACY.md](PRIVACY.md)）。
 
 ---
 

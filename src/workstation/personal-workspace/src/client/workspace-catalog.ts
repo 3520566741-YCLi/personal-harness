@@ -177,7 +177,15 @@ function scheduleRetry(): void {
 }
 
 /** index apply 时 probe ctx.get('workspaces') 并订阅其 .list；返回释放函数。 */
-export function bindWorkspaceCatalog(getWorkspaces: () => unknown): () => void {
+export function bindWorkspaceCatalog(
+  getWorkspaces: () => unknown,
+  /**
+   * V1.2-J J3：服务**每次成功绑定**时回调（带原始服务对象）。
+   * 用途 = 官方「服务晚于本插件 apply 注册」的真机场景下，写面（create/delete）也能跟上 ——
+   * 否则写面会永久停留在"不可用"（那是不诚实的降级）。
+   */
+  onAttached?: (svc: unknown) => void,
+): () => void {
   /** 尝试绑定官方服务；成功 true（已 apply + subscribe）。 */
   const tryAttach = (): boolean => {
     let svc: unknown = null
@@ -206,6 +214,11 @@ export function bindWorkspaceCatalog(getWorkspaces: () => unknown): () => void {
     } catch {
       // 订阅失败 = 未绑定（保留重试机会），不写 ready
       return false
+    }
+    try {
+      onAttached?.(svc)
+    } catch {
+      // 写面回调失败不影响只读投影（诚实降级：写面自己会报不可用）
     }
     return true
   }

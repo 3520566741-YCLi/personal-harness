@@ -1,7 +1,7 @@
 # PUBLIC SECRET SCAN REPORT
 
 - 扫描对象：同 `PUBLIC_PRIVACY_SCAN_REPORT.md`（全部被跟踪文本文件）
-- 扫描时间：2026-09-11T18:02:35.056Z｜HEAD `a4a2092（自引用发行提交：产物内嵌短哈希 = 该提交自身短哈希）`
+- 扫描时间：2026-09-27T07:14:34.286Z｜HEAD `bcf7e4a`
 - 工具：`tools/scan-public.mjs` 的 secret 规则集（S-01…S-06：OpenAI 形态密钥 / GitHub token / AWS key id / 私钥块 / 凭据赋值 / Bearer 头）
 - 结论：**CLEAN（无 secret）**
 

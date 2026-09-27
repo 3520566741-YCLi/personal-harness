@@ -160,7 +160,7 @@ A one-line status bar at the bottom shows the current view, the current conversa
 - It does not take over, modify, delete or migrate any of your official DSH data;
 - It does not approve permissions for you and does not run high-risk operations automatically;
 - It does not present anything unverified as working (Windows remains **Experimental / Untested**);
-- It makes no network requests and has no telemetry, no account and no keys (see [Privacy](PRIVACY.md)).
+- By default it makes no requests to any external host (the single exception: one anonymous read-only probe when you open the right-panel "ChatGPT" tab yourself), and it has no telemetry, no account and no keys (see [Privacy](PRIVACY.md)).
 
 ---
 

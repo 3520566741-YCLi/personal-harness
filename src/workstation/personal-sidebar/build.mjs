@@ -31,11 +31,12 @@ const banner = {
 const footer = { js: 'return module.exports; } });' }
 
 // 证据链：repo HEAD 短哈希注入 bundle（__DPS_SHA__），配合版本 define。
+// 发行时可注入目标短哈希（DPS_SHA_OVERRIDE）：自引用发行提交要求「产物内嵌的短哈希 == 提交自身的
+// 短哈希」，而提交哈希由内容决定 —— 所以必须**先定目标值**，把产物做成承载该目标值，再搜索提交里的
+// nonce 让提交哈希落在目标值上。普通构建（无该变量）行为不变：一律取当前 HEAD 的短哈希。
 const gitSha = (() => {
-  // 发行期可选覆盖：仓库在「创建发行提交之前」打包时，用 DPS_SHA_OVERRIDE 显式指定要内嵌的短提交哈希
-  // （该值必须等于最终发行提交自身的短哈希；由 scripts/verify-release.mjs 事后核验，不一致即失败）。
-  const override = process.env.DPS_SHA_OVERRIDE
-  if (override) return override.trim()
+  const override = (process.env.DPS_SHA_OVERRIDE ?? '').trim()
+  if (/^[0-9a-f]{7}$/.test(override)) return override
   try {
     return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' }).trim()
   } catch {

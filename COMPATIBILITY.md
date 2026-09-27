@@ -37,18 +37,20 @@ node scripts/compat-check.mjs --json   # 机器可读
 | 项目 | 值 |
 |---|---|
 | 宿主 | DSH Desktop **2.0.5** @ `/Applications/DSH Desktop.app` |
-| 宿主集成方式 | compatibility mode —— **官方代码零补丁**（三个插件都通过官方扩展点接入） |
+| 宿主集成方式 | compatibility mode —— **官方代码零补丁**（四个插件都通过官方扩展点接入） |
 | 系统 | macOS |
 | Node.js | ≥ 20（本次构建/测试用 24.16.0） |
 | pnpm | 用于 profile 依赖管理（本次 11.8.0） |
-| 组件 | sidebar 0.1.24 ／ workspace 0.1.20 ／ hud 0.1.3 |
+| 组件（四个插件） | sidebar 0.1.28 ／ workspace 0.1.25 ／ hud 0.1.3 ／ quickstop 0.1.1 |
+
+插件各自负责什么（`dsh-personal-quickstop` 是 0.1.1 新增）：`sidebar` = Personal 侧栏导航；`workspace` = 主页/会话/任务看板/项目/工作区等中央页面；`hud` = 底部状态条；**`quickstop` = Quick Stop／后台任务优雅中断与续接**。产品版本 **Personal Harness V1.2**（发行 tag `public-v1.2`，macOS 发行）。
 
 ## 覆盖到什么程度（诚实口径）
 
 | 已验证 | 证据 |
 |---|---|
-| 在**隔离的合成 profile** 中完整走通 安装 → 复装（幂等）→ 兼容性门 → 卸载 → 回滚，共 22 项断言全通过 | [docs/PUBLIC_INSTALL_TEST_REPORT.md](docs/PUBLIC_INSTALL_TEST_REPORT.md) |
-| 产物契约测试 57 项（两种 `NODE_ENV` 下各 57 项） | `npm run test` |
+| 在**隔离的合成 profile** 中完整走通 安装 → 复装（幂等）→ 兼容性门 → 卸载 → 回滚，共 22 项断言全通过（该报告出自 **V1.1** 公开发行；本仓库内**没有针对 V1.2 的同类报告**，所以 V1.2 的该项**未验证**） | [docs/PUBLIC_INSTALL_TEST_REPORT.md](docs/PUBLIC_INSTALL_TEST_REPORT.md) |
+| 产物契约测试 **71 项**（四个包；`development` 与 `production` 两种 `NODE_ENV` 下各跑一遍，均 0 失败） | `npm run test` |
 | 装机后 profile 内 `client.js` 与发行包**逐字节一致** | `install.sh` 第 7 步 / `npm run verify` |
 | 发行包 sha256 与 `manifest.json` 一致 | `npm run verify` |
 
@@ -57,5 +59,5 @@ node scripts/compat-check.mjs --json   # 机器可读
 | 在**真实桌面会话**里打开公开构建并肉眼确认界面 | 需要真机重启宿主；本次发布未执行（见 [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)） |
 | 在 2.0.5 以外的宿主版本上运行 | 无设备/无版本，判定一律 UNTESTED |
 | **Windows 上的任何环节**（安装/界面/卸载/回滚） | 本机无 Windows 环境；只做了 PowerShell 语法解析 + 非 Windows 环境的逻辑演练（见 [docs/WINDOWS_EXPERIMENTAL_STATUS.md](docs/WINDOWS_EXPERIMENTAL_STATUS.md)） |
-| 从「上一个公开版本」升级 | 本次是**首个**公开发行，没有上一个公开版本可升 → 该测试项为 N/A（不是 PASS） |
+| 从上一公开版本（V1.1）升级到 V1.2 | 本仓库内**没有**该升级路径的验证证据 → 按**未验证**处理（不写成 PASS） |
 | 长时间使用下的内存/性能表现 | 未测量 |

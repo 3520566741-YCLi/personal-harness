@@ -33,7 +33,7 @@ declare const __PRODUCT_VERSION__: string
 
 const FALLBACK_VERSION = '0.1.24'
 const FALLBACK_PRODUCT_NAME = 'Personal Harness'
-const FALLBACK_PRODUCT_VERSION = 'V1.1'
+const FALLBACK_PRODUCT_VERSION = 'V1.2'
 
 /** 品牌主标题（用户指定文案）。 */
 export const BRAND_TITLE = 'Personal Harness'

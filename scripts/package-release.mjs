@@ -1,6 +1,6 @@
 // Personal Harness — public release packager.
 //
-// 汇总三个插件的构建产物，生成公开发行物：
+// 汇总各插件的构建产物（按 PLUGINS 清单），生成公开发行物：
 //   packages/*.tgz            安装对象（file: 安装用；文件名带公开发行标签，避免 pnpm 复用旧 specifier）
 //   manifest.json             逐包 sha256 / 版本 / 宿主兼容 / 产物内嵌提交（逐包如实）
 //   checksums.sha256          tgz + manifest 自身
@@ -25,7 +25,7 @@ const VERIFY_ONLY = process.argv.includes('--verify')
 
 const PRODUCT = JSON.parse(readFileSync(join(REPO, 'src/workstation/personal-version/product.json'), 'utf8'))
 const PUBLIC_RELEASE_TAG = `public-v${String(PRODUCT.version).replace(/^v/i, '')}`
-const PLUGINS = ['personal-sidebar', 'personal-workspace', 'personal-hud']
+const PLUGINS = ['personal-sidebar', 'personal-workspace', 'personal-hud', 'personal-quickstop']
 const PACKAGES_DIR = join(REPO, 'packages')
 const HOST = { app: 'DSH Desktop', supported: '2.0.5', testedRange: '2.0.x (compatibility mode)' }
 

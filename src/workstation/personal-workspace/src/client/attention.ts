@@ -44,6 +44,62 @@ export interface AttentionSnapshot {
   hostUp: boolean
   hostError?: string
   items: AttentionRow[]
+  /**
+   * 任务看板**徽标**口径（2026-09-14 用户收口）：只计「运作中」+「需要我介入 / 已失败」，
+   * 其余状态（backlog / todo / done）不进徽标。与 `n`（需介入计数）同一次派生、不会漂移。
+   */
+  badge: BoardBadge
+}
+
+/**
+ * 徽标数字与主色的唯一口径（用户 2026-09-14 收口）：
+ *   · 橙（running）  = 目标任务 `status === 'running'`（= 正在运作）
+ *   · 红（attention）= 需介入（确认门 / 宿主 task.error / 最近执行失败 / 缺结果）
+ *                      或 `status === 'failed'`
+ *   · 其余（backlog / todo / done）**不显示**
+ *   · 同一任务两态兼有时只算一次，且取红（需介入盖过运作中）
+ *   · 已归档任务不进徽标（不在活跃流）
+ */
+export interface BoardBadge {
+  /** 徽标数字 = running + attention（去重后）。 */
+  total: number
+  /** 仅橙计数。 */
+  running: number
+  /** 红计数（需介入 ∪ 已失败）。 */
+  attention: number
+  /** 主色：有红 → attention；只有橙 → running；都没有 → none（不显示徽标）。 */
+  tone: 'attention' | 'running' | 'none'
+}
+
+export const EMPTY_BADGE: BoardBadge = { total: 0, running: 0, attention: 0, tone: 'none' }
+
+/**
+ * 纯函数：由投影任务 + 需介入行派生徽标（headless 可直接断言）。
+ * 输入就是同一次 projection 的结果，**不新增数据源**。
+ */
+export function composeBoardBadge(
+  tasks: readonly ProjectedTask[],
+  attentionItems: readonly AttentionRow[],
+): BoardBadge {
+  const red = new Set<string>(attentionItems.map((i) => i.id))
+  const orange = new Set<string>()
+  for (const p of tasks) {
+    // 归档真值以 `task.archivedAt` 为准（与 attentionOf 第 0 步同一判据）；`taskArchived`
+    // 是投影的派生标记，缺省时不得把归档任务算进活跃徽标。
+    if (p.task.archivedAt !== undefined || p.taskArchived === true) continue
+    if (p.task.status === 'failed') red.add(p.task.id)
+    else if (p.task.status === 'running') orange.add(p.task.id)
+  }
+  for (const id of red) orange.delete(id)
+  const attention = red.size
+  const running = orange.size
+  const total = attention + running
+  return {
+    total,
+    running,
+    attention,
+    tone: attention > 0 ? 'attention' : running > 0 ? 'running' : 'none',
+  }
 }
 
 export const EMPTY_ATTENTION: AttentionSnapshot = {
@@ -52,6 +108,7 @@ export const EMPTY_ATTENTION: AttentionSnapshot = {
   ready: false,
   hostUp: false,
   items: [],
+  badge: EMPTY_BADGE,
 }
 
 /**
@@ -68,6 +125,7 @@ export function composeAttention(st: TaskReconcileState): AttentionSnapshot {
       hostUp: false,
       ...(typeof st.hostError === 'string' && st.hostError.length > 0 ? { hostError: st.hostError } : {}),
       items: [],
+      badge: EMPTY_BADGE,
     }
   }
   const items: AttentionRow[] = st.tasks
@@ -80,7 +138,7 @@ export function composeAttention(st: TaskReconcileState): AttentionSnapshot {
       kind: p.attention?.kind ?? 'unknown',
       weight: p.attention?.weight ?? 0,
     }))
-  return { v: 1, n: items.length, ready: true, hostUp: true, items }
+  return { v: 1, n: items.length, ready: true, hostUp: true, items, badge: composeBoardBadge(st.tasks, items) }
 }
 
 function canBus(): boolean {

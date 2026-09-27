@@ -27,7 +27,15 @@
 //
 // NOTE: 本模块保持纯 TS（零 react import）→ headless node smoke 可直接 import。
 
-/** 中央主区视图标识。'conversation' 表示放行官方 Conversation（非 Personal 页面）。 */
+/**
+ * 中央主区视图标识。'conversation' 表示放行官方 Conversation（非 Personal 页面）。
+ *
+ * ⚠️ 类型缺口修正（V1.2-E2）：`'unassigned'` 一直存在于 `MAIN_VIEWS` 与 `MAIN_VIEW_TITLES`，
+ * 却**不在本联合里** —— 于是 `isMainView('unassigned')` 会把它窄化成不含自己的 `MainViewId`
+ * （不成立的收窄）。因为本模块走 esbuild（剥类型）且本仓无 tsc 脚本，这个缺口一直没被拦下。
+ * 本次一并补齐，使**联合 = MAIN_VIEWS = MAIN_VIEW_TITLES 的键**三者一致
+ * （由 `scripts/smoke-v12e-memory-tree-view.mjs` 断言后两者运行时相等）。
+ */
 export type MainViewId =
   | 'conversation'
   | 'home'
@@ -35,8 +43,11 @@ export type MainViewId =
   | 'new-task'
   | 'project-center'
   | 'project-detail'
+  | 'unassigned'
   | 'workspace-center'
   | 'recent'
+  | 'agent-center'
+  | 'memory-tree'
 
 export const MAIN_VIEWS: readonly MainViewId[] = [
   'conversation',
@@ -48,6 +59,8 @@ export const MAIN_VIEWS: readonly MainViewId[] = [
   'unassigned',
   'workspace-center',
   'recent',
+  'agent-center',
+  'memory-tree',
 ]
 
 export function isMainView(v: unknown): v is MainViewId {
@@ -65,6 +78,8 @@ export const MAIN_VIEW_TITLES: Record<MainViewId, string> = {
   unassigned: '未分配',
   'workspace-center': '工作区',
   recent: '最近',
+  'agent-center': '智能体',
+  'memory-tree': '记忆',
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Personal Harness — uninstaller（公开版）
 #
-# 只移除 Personal Harness 自己安装的三个插件；**默认完整保留用户数据**
+# 只移除 Personal Harness 自己安装的插件（本仓库 packages/ 下的全部）；**默认完整保留用户数据**
 # （projects / tasks / sessions / workspaces 全部属于 DSH 官方存储，本发行版不拥有它们）。
 #
 # 用法：
@@ -14,7 +14,8 @@
 set -u
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGINS="dsh-personal-sidebar dsh-personal-workspace dsh-personal-hud"
+# 插件清单**不硬编码**：从发行物自带的 manifest.json 派生（单一事实源），
+# 这样新增插件时不会出现「装了却卸不掉」。派生放在下方 die() 定义之后。
 PURGE=0
 for arg in "$@"; do
   case "${arg}" in
@@ -32,6 +33,8 @@ PROFILE="${DSH_PROFILE:-$HOME/.dsh/profiles/desktop}"
 command -v pnpm >/dev/null 2>&1 || die "缺少 pnpm"
 
 say "profile：${PROFILE}"
+PLUGINS="$(node -e 'const m=require(process.argv[1]);process.stdout.write(((m.plugins)||[]).map((x)=>x.name).join(" "))' "${REPO}/manifest.json" 2>/dev/null || true)"
+[ -n "${PLUGINS}" ] || die "无法从 ${REPO}/manifest.json 读取插件清单（该文件随发行物提供；缺失时请手动 pnpm remove）"
 say "将移除：${PLUGINS}"
 
 for p in ${PLUGINS}; do

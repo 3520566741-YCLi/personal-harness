@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Personal Harness — installer（公开版）
 #
-# 目标：把三个插件装进 DSH Desktop 的 profile，让「朋友」一条命令就能用。
+# 目标：把本仓库 packages/ 下的插件装进 DSH Desktop 的 profile，让「朋友」一条命令就能用。
 #
 # 硬性纪律：
 #   · 绝不 sudo；绝不动官方 DSH 代码；绝不删除或覆盖用户数据（projects / tasks / sessions）。
@@ -96,7 +96,7 @@ elif [ "${DO_BACKUP}" -eq 1 ]; then
   for f in pnpm-lock.yaml pnpm-workspace.yaml cordis.yml cordis.patch.yml; do
     [ -f "${PROFILE}/${f}" ] && cp -p "${PROFILE}/${f}" "${BACKUP_DIR}/${f}"
   done
-  # 记录当前已装的三个插件（可能是旧版本 / 未安装）
+  # 记录当前已装的插件（可能是旧版本 / 未安装）
   node -e '
     const fs = require("fs")
     const p = process.argv[1]

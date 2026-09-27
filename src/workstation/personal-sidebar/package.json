@@ -1,6 +1,6 @@
 {
   "name": "dsh-personal-sidebar",
-  "version": "0.1.24",
+  "version": "0.1.28",
   "description": "Personal Harness sidebar — custom navigation shell for DSH Desktop (Home / Conversation list / New task / Task board / Projects / Workspaces / Recent) rendered into official sidebar slots.",
   "license": "MIT",
   "private": true,

@@ -78,6 +78,13 @@ export const LAYERS = {
   hudInspector: 550,
   /** Official primitives band (body-portaled when they need to escape). */
   popover: 100,
+  /**
+   * personal-sidebar 的浮动 tabbar（`.dps-tabbar[data-dps-overlay-open]`，浮层打开时置顶）：
+   * 必须盖住官方 popover 带（100）与我方 Aux 面板，但**不得**盖住 hud status bar（450）
+   * 与官方 Modal（1000）。130 = 逐值保留 2026-09-14 的原值（零行为变化；原为魔数，
+   * 违反 smoke-overlay-layering 的「一律 LAYERS.xxx」守则）。
+   */
+  sidebarTabbarOverlay: 130,
   modal: 1000,
   toast: 1100,
 } as const

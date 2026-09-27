@@ -2,7 +2,7 @@
 //
 // 覆盖三件事（都是对**公开发行物**的断言，不是对源码的断言）：
 //   A. 发行物完整性：packages/*.tgz 的 sha256 与 manifest.json / checksums.sha256 一致
-//   B. 产物契约：三个 bundle 具备官方扩展点所需的载荷形状（模块装载握手 id、DOM 契约标记、产品版本）
+//   B. 产物契约：每个 bundle 具备官方扩展点所需的载荷形状（模块装载握手 id、DOM 契约标记、产品版本）
 //   C. 产物干净：bundle 内不含私人数据（本机路径 / 个人品牌串 / 会话 id / 用户私有项目名）
 //   D. 装载冒烟：bundle 的 factory 在 jsdom 里能执行且不抛（best-effort，覆盖「加载不崩」这一层）
 //

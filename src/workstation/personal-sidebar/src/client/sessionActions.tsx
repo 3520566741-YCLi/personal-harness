@@ -1,9 +1,15 @@
 // dsh-personal-sidebar · E4-FINAL —— Personal「会话列表」复现**官方 Session 菜单**。
 //
-// 用户红线（本轮唯一目标）：
-//   ①【官方有什么 → Personal 复现什么】—— 只复现官方会话列表现有的三个动作：
-//     重命名 / 分叉会话 / 归档会话。**不新增**删除/置顶/收藏/移动/项目归属/导出/标签/备注/
-//     自定义归档中心/恢复……（官方菜单里没有的一律不做）。
+// 用户红线（E4-FINAL 当轮唯一目标）：
+//   ①【官方有什么 → Personal 复现什么】—— 复现官方会话列表现有的三个动作：
+//     重命名 / 分叉会话 / 归档会话。**官方菜单里没有的一律不做**。
+//     例外（2026-09-17 用户明确要求，见下 ⓐ）：**「加入项目」是唯一被用户点名的 Personal 扩展项**，
+//     它不属于官方菜单（项目是 Personal 概念，官方壳的 IconProjectAddOutline16 挂的是
+//     `t("workspace.add")`＝"添加工作区"，与会话归属无关），因此其文案由我方拟定、**不冒充官方 i18n**。
+//     其余一切官方没有的动作（删除/置顶/收藏/导出/标签/备注/自定义归档中心/恢复…）继续不做。
+//   ⓐ 2026-09-17 用户原话：「每个会话的 3 个点里面的这个窗口，里面加一个加入项目的功能，
+//      这个样子就不需要每次都到项目里面一个个收录了。」→ 追加项固定排在官方三项**之后**，
+//      且仅当项目数据桥可用时才出现（不可用就不给假入口，详见 projectAssign.tsx）。
 //   ②【尽可能原样复用】—— 复用优先级：
 //      **P1（已采用）**：直接复用官方 UI 原语。`@deepseek-ai/dsh-client-ui-primitives` 是官方
 //        壳的**平台静态模块**（与 react 同层，证据 = 壳 bundle 的 staticModules 表：
@@ -34,6 +40,7 @@
 // 单一真源纪律：本文件**不持有**任何会话状态。标题、列表、归档集合全部由官方 store 推送；
 // 三个动作成功后的界面变化是官方真相变化的结果，不是我方本地状态。
 import { useRef, type ReactNode } from 'react'
+import { projectMenuItem, PROJECT_MENU_ITEM_ID } from './projectAssign'
 import {
   Button,
   IconArchiveOutline20,
@@ -84,6 +91,8 @@ export interface SessionActionsMenuProps {
   onRename: () => void
   onFork: () => void
   onArchive: () => void
+  /** Personal 扩展项「加入项目」（ⓐ）。**缺省 = 不显示该项**（项目数据桥不可用时的诚实降级）。 */
+  onProject?: (() => void) | undefined
 }
 
 /**
@@ -92,18 +101,21 @@ export interface SessionActionsMenuProps {
  * （不被侧栏 overflow 裁剪），指针移出即收起。
  */
 export function SessionActionsMenu(props: SessionActionsMenuProps): ReactNode {
-  const { title, open, onOpenChange, onRename, onFork, onArchive } = props
+  const { title, open, onOpenChange, onRename, onFork, onArchive, onProject } = props
+  // 官方三项恒在前、顺序不变；Personal 扩展项（ⓐ）仅在有 handler 时追加在末尾。
+  const items = onProject === undefined ? SESSION_MENU_ITEMS : [...SESSION_MENU_ITEMS, projectMenuItem()]
   return (
     <Menu
       open={open}
       onClose={() => onOpenChange(false)}
-      items={SESSION_MENU_ITEMS}
+      items={items}
       onSelect={(id: string) => {
         // 官方同序：先收菜单，再派发（官方 :983-988）。
         onOpenChange(false)
         if (id === 'rename') onRename()
         if (id === 'fork') onFork()
         if (id === 'archive') onArchive()
+        if (id === PROJECT_MENU_ITEM_ID) onProject?.()
       }}
       portal
       closeOnPointerLeave

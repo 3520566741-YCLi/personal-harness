@@ -375,7 +375,9 @@ export function HomeView(): ReactNode {
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [receipt, setReceipt] = useState<QuickReceipt | null>(lastReceipt)
-  // E4-FIX-IA-2 FINAL · PHASE A：Agent / 权限 = 官方真实能力清单（读不到 → 诚实原因，控件禁用）
+  // E4-FIX-IA-2 FINAL · PHASE A：Agent / 权限 = 官方真实能力清单。
+  // 需求 ⓑ（口径 C，2026-09-17 用户裁定）：**Agent 读不到清单 → 降级为「自动」，控件不禁用、不报红字**
+  // （Agent 本就可选，读不到清单不该让整条「开始一段会话」看起来坏了）；真失败仍如实报错（见下方 notice/receipt）。
   const [agentOpts, setAgentOpts] = useState<PresetOption[] | null>(null)
   const [agentReason, setAgentReason] = useState<string | null>(null)
   const [permOpts, setPermOpts] = useState<PresetOption[] | null>(null)
@@ -547,7 +549,7 @@ export function HomeView(): ReactNode {
             value={agentSel}
             onChange={setAgentSel}
             options={agentOpts ?? undefined}
-            unavailableReason={agentReason ?? undefined}
+            degradedReason={agentReason ?? undefined}
           />
           <PermissionSelect
             value={permSel}
@@ -558,7 +560,11 @@ export function HomeView(): ReactNode {
           <span className="dhm-k" data-dhm-bind-state={agentReason === null && permReason === null ? 'ready' : 'limited'}>
             {agentReason === null && permReason === null
               ? '（创建后经官方通道即时生效）'
-              : '（部分能力不可用，见控件旁原因）'}
+              : agentReason !== null && permReason === null
+                ? '（Agent 仅「自动」可选：官方清单当前读不到；权限预设仍经官方通道即时生效）'
+                : agentReason === null && permReason !== null
+                  ? '（权限降级为官方默认：会话默认权限清单当前读不到；Agent 预设仍经官方通道即时生效）'
+                  : '（Agent 与权限均退化为默认：会话创建本身不受影响）'}
           </span>
         </div>
         <div className="dhm-line" style={{ flexWrap: 'wrap' }}>

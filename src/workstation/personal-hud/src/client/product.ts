@@ -11,7 +11,7 @@ declare const __PRODUCT_VERSION__: string
 declare const __DPS_VERSION__: string
 
 const FALLBACK_PRODUCT_NAME = 'Personal Harness'
-const FALLBACK_PRODUCT_VERSION = 'V1.1'
+const FALLBACK_PRODUCT_VERSION = 'V1.2'
 const FALLBACK_COMPONENT_VERSION = '0.1.3'
 
 /** 产品名（如 `Personal Harness`）。 */

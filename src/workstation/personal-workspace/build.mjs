@@ -25,11 +25,12 @@ const banner = {
 const footer = { js: 'return module.exports; } });' }
 
 // 证据链：repo HEAD 短哈希注入 bundle（__DPS_SHA__，client 诊断模块读取）。
+// 发行时可注入目标短哈希（DPS_SHA_OVERRIDE）：自引用发行提交要求「产物内嵌的短哈希 == 提交自身的
+// 短哈希」，而提交哈希由内容决定 —— 所以必须**先定目标值**，把产物做成承载该目标值，再搜索提交里的
+// nonce 让提交哈希落在目标值上。普通构建（无该变量）行为不变：一律取当前 HEAD 的短哈希。
 const gitSha = (() => {
-  // 发行期可选覆盖：仓库在「创建发行提交之前」打包时，用 DPS_SHA_OVERRIDE 显式指定要内嵌的短提交哈希
-  // （该值必须等于最终发行提交自身的短哈希；由 scripts/verify-release.mjs 事后核验，不一致即失败）。
-  const override = process.env.DPS_SHA_OVERRIDE
-  if (override) return override.trim()
+  const override = (process.env.DPS_SHA_OVERRIDE ?? '').trim()
+  if (/^[0-9a-f]{7}$/.test(override)) return override
   try {
     return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' }).trim()
   } catch {
@@ -60,7 +61,70 @@ await build({
   minify: false,
 })
 
+// 宿主半（V1.2-B）：纯投影层 src/server/project-context.ts 打包为 ESM 供 index.js import。
+//   与 client 同一条 esbuild 链，避免「源码改了、产物没跟上」的静默漂移。
+await build({
+  entryPoints: [join(here, 'src/server/project-context.ts')],
+  outfile: join(outFlat, 'project-context.mjs'),
+  bundle: true,
+  platform: 'node',
+  format: 'esm',
+  target: ['es2022'],
+  sourcemap: false,
+  logLevel: 'info',
+  minify: false,
+})
+
+// 宿主半（V1.2-D）：记忆投影层 src/server/memory-context.ts 同链打包（依赖 project-context 的 estimateTokens）。
+await build({
+  entryPoints: [join(here, 'src/server/memory-context.ts')],
+  outfile: join(outFlat, 'memory-context.mjs'),
+  bundle: true,
+  platform: 'node',
+  format: 'esm',
+  target: ['es2022'],
+  sourcemap: false,
+  logLevel: 'info',
+  minify: false,
+})
+
+// 宿主半（V1.2-E2）：记忆树投影层 src/server/memory-graph.ts 同链打包
+//   （树路由 memory-tree.js 以 './memory-graph.mjs' 引用；E1 时无消费者故未产物化，E2 接线时入链）。
+await build({
+  entryPoints: [join(here, 'src/server/memory-graph.ts')],
+  outfile: join(outFlat, 'memory-graph.mjs'),
+  bundle: true,
+  platform: 'node',
+  format: 'esm',
+  target: ['es2022'],
+  sourcemap: false,
+  logLevel: 'info',
+  minify: false,
+})
+
+// 宿主半（V1.2-E4）：Memory Curator 纯引擎 src/server/memory-curator.ts 同链打包
+//   （承载 memory-curator.js 以 './memory-curator.mjs' 引用；漏入链 ⇒ 装机后 import 必崩）。
+await build({
+  entryPoints: [join(here, 'src/server/memory-curator.ts')],
+  outfile: join(outFlat, 'memory-curator.mjs'),
+  bundle: true,
+  platform: 'node',
+  format: 'esm',
+  target: ['es2022'],
+  sourcemap: false,
+  logLevel: 'info',
+  minify: false,
+})
+
 cpSync(join(here, 'server/index.js'), join(outFlat, 'index.js'))
+// 宿主半的兄弟模块（保持相对 import 路径不变；见 server/context.js 与 server/mirror.js）
+cpSync(join(here, 'server/context.js'), join(outFlat, 'context.js'))
+cpSync(join(here, 'server/mirror.js'), join(outFlat, 'mirror.js'))
+cpSync(join(here, 'server/memory-source.js'), join(outFlat, 'memory-source.js'))
+cpSync(join(here, 'server/memory-tree.js'), join(outFlat, 'memory-tree.js'))
+cpSync(join(here, 'server/memory-curator.js'), join(outFlat, 'memory-curator.js'))
+// 宿主半（V1.2-F1）：ChatGPT 嵌入可行性探测（只读 GET，零凭据）—— 漏拷 ⇒ 装机后 index.js import 必崩。
+cpSync(join(here, 'server/chatgpt-embed-probe.js'), join(outFlat, 'chatgpt-embed-probe.js'))
 cpSync(join(here, 'cordis.patch.yml'), join(outFlat, 'cordis.patch.yml'))
 cpSync(join(here, 'package.json'), join(outFlat, 'package.json'))
 cpSync(join(repoRoot, 'LICENSE'), join(outFlat, 'LICENSE'))

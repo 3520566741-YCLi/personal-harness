@@ -151,26 +151,37 @@ export interface AgentSelectProps {
    * E4-FIX-IA-2 FINAL · PHASE A：Home 的 Agent 走官方预设（创建后由官方 select 绑定）。
    */
   options?: { id: string; label: string; detail?: string }[]
-  /** 能力不可用时的诚实原因（显示在控件旁，控件 disabled）。 */
-  unavailableReason?: string
+  /**
+   * 官方清单读不到时的**降级原因**（需求 ⓑ · 口径 C，2026-09-17 用户裁定）。
+   * 与「控件坏掉」明确区分：**Agent 是可选项**，清单读不到不该禁用控件、也不该在界面报错误样式的红字
+   * （那会让「主页 = 开始一段会话」看起来坏了）。降级 = 只提供「自动（官方默认）」一项；
+   * 技术原因保留在 `title`（可查、不吓人），并非隐去 —— 见 `data-dpsel-agent-state="auto-only"`。
+   */
+  degradedReason?: string
 }
 
-export function AgentSelect({ value, onChange, options, unavailableReason }: AgentSelectProps): ReactNode {
-  const blocked = typeof unavailableReason === 'string' && unavailableReason.length > 0
-  const items = options ?? AGENT_CATALOG.map((a) => ({ id: a.id, label: `${a.name}（${a.zh}）` }))
+export function AgentSelect({ value, onChange, options, degradedReason }: AgentSelectProps): ReactNode {
+  const degraded = typeof degradedReason === 'string' && degradedReason.length > 0
+  // 降级时**不列本仓库 catalog**：那会让人以为选到的是官方预设（口径 C：只留「自动」）。
+  const items = degraded
+    ? []
+    : options ?? AGENT_CATALOG.map((a) => ({ id: a.id, label: `${a.name}（${a.zh}）` }))
   return (
-    <span className="dpsel" data-dpsel-agent="1">
+    <span
+      className="dpsel"
+      data-dpsel-agent="1"
+      data-dpsel-agent-degraded={degraded ? '1' : undefined}
+      title={degraded ? degradedReason : undefined}
+    >
       <label className="dpsel-k" htmlFor="dpsel-agent">
         Agent
       </label>
       <select
         id="dpsel-agent"
         className="dpsel-s"
-        value={value ?? ''}
-        disabled={blocked}
+        value={degraded ? '' : value ?? ''}
         onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}
         aria-label="执行 Agent"
-        aria-invalid={blocked ? true : undefined}
       >
         <option value="">自动（官方默认）</option>
         {items.map((a) => (
@@ -179,9 +190,9 @@ export function AgentSelect({ value, onChange, options, unavailableReason }: Age
           </option>
         ))}
       </select>
-      {blocked ? (
-        <span className="dpsel-k" data-dpsel-agent-state="unavailable">
-          不可用：{unavailableReason}
+      {degraded ? (
+        <span className="dpsel-k" data-dpsel-agent-state="auto-only">
+          仅「自动」可选（官方清单当前读不到）
         </span>
       ) : null}
     </span>

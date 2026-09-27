@@ -12,6 +12,8 @@
 import { Component, useEffect, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import { projectRegistry } from '../../../personal-registry/src/projects'
+import { installProjectBridge } from './project-bridge'
+import { installMirrorPush } from './mirror-push'
 import { CSS_WS } from './dashboard'
 import {
   CSS_MAIN_HOST,
@@ -37,6 +39,7 @@ import {
 } from './home'
 import { CSS_NEWTASK, NewTaskTab, pushStartPrefill } from './newtask'
 import { bindProjectCenterAction, bindProjectCenterDetail, bindProjectCenterUnassigned, CSS_PROJECT_CENTER, ProjectCenterView } from './project-center'
+import { CSS_PROJECT_MANAGE } from './project-manage'
 import {
   bindProjectDetailActions,
   bindProjectDetailSessions,
@@ -46,12 +49,18 @@ import {
   setDetailProjectId,
 } from './project-detail'
 import { bindRecentServices, CSS_RECENT, RecentView } from './recent'
+import { bindMemoryTreeServices, CSS_MEMORY_TREE, MemoryTreeView } from './memory-tree'
+import { CHATGPT_TAB_ID, CHATGPT_TAB_ORDER, CHATGPT_TAB_TITLE } from './chatgpt-embed'
+import { ChatGptLauncher, CSS_CHATGPT_LAUNCHER } from './chatgpt-launcher'
+import { AgentCenterView, CSS_AGENT_CENTER } from './agent-center'
 import { startBoardGuard } from './boardguard'
 import { TaskReconcile } from './reconcile'
 import { TaskBoardClient } from './taskboard'
 import { CSS_SELECTORS } from './selectors'
 import { CSS_UNASSIGNED, UnassignedView } from './unassigned'
 import { bindWorkspaceCatalog, subscribeWorkspaceCatalog, workspaceCatalogSnapshot } from './workspace-catalog'
+import { bindWorkspaceWriteService } from './workspace-actions'
+import { bindWorkspaceTaskLedgerSource } from './workspace-tasks'
 import { applyAgentPreset, applyPermissionPreset, bindSessionBindings } from './session-bindings'
 import { bindWorkspaceCenterActions, CSS_WORKSPACE_CENTER, WorkspaceCenterView } from './workspace-center'
 import {
@@ -180,6 +189,8 @@ const MAIN_RENDER: Record<Exclude<MainViewId, 'conversation'>, () => ReactNode> 
   unassigned: () => <UnassignedView />,
   'workspace-center': () => <WorkspaceCenterView />,
   recent: () => <RecentView />,
+  'agent-center': () => <AgentCenterView />,
+  'memory-tree': () => <MemoryTreeView />,
 }
 
 /**
@@ -367,20 +378,44 @@ function applyInner(ctx: LooseCtx): boolean {
       '\n' +
       CSS_RECENT +
       '\n' +
+      CSS_MEMORY_TREE +
+      '\n' +
+      CSS_CHATGPT_LAUNCHER +
+      '\n' +
       CSS_PROJECT_CENTER +
+      '\n' +
+      CSS_PROJECT_MANAGE +
       '\n' +
       CSS_PROJECT_DETAIL +
       CSS_UNASSIGNED +
       '\n' +
       CSS_WORKSPACE_CENTER +
       '\n' +
+      CSS_AGENT_CENTER +
+      '\n' +
       CSS_MAIN_HOST
     document.head.appendChild(styleEl)
+
+    // 项目关系桥（2026-09-17 用户需求「会话 ⋯ 菜单里直接加入项目」）。
+    //   项目关系 store 的唯一实例在本 bundle（personal-registry/src/projects）；
+    //   sidebar 是**另一个 bundle**，若它自行 import 会得到第二份内存态 → 写完项目详情看不见。
+    //   故由本处把同一实例挂到 window 供 sidebar 同步读写（见 project-bridge.ts 文件头）。
+    //   装在 mount 内 → 与 styleEl/其他绑定同一生命周期（卸载时只删自己装的那个实例）。
+    const offProjectBridge = installProjectBridge(
+      window as unknown as Record<string, unknown>,
+      projectRegistry as unknown as Parameters<typeof installProjectBridge>[1],
+    )
+
+    // V1.2-B：项目镜像推送（宿主半提示词装配读它；见 mirror-push.ts 文件头与 ADR-018）。
+    //   与项目关系桥同一生命周期装在 mount 内 —— 卸载时停订阅，不留悬挂推送。
+    const mirrorPush = installMirrorPush(projectRegistry as unknown as Parameters<typeof installMirrorPush>[0])
 
     // IA2-3：官方 workspaces 目录投影（Home/New Task/Workspace Center 共用数据源；
     //   未 probe 到 → ready=false，选择器诚实降级）。bindHomeServices 3rd param =
     //   createConversation（官方 sessions.create+open → composer setDraft 预填）。
-    const offWsCat = bindWorkspaceCatalog(() => probeWorkspaces(ctx))
+    //   V1.2-J J3：第二参 = 绑定成功回调 → 把**同一个**官方服务同时交给写面
+    //   （workspace-actions：create/delete），服务晚注册时写面也能跟上（不永久停在"不可用"）。
+    const offWsCat = bindWorkspaceCatalog(() => probeWorkspaces(ctx), (svc) => bindWorkspaceWriteService(svc))
     // E4-FIX-IA-2 FINAL · PHASE A：官方会话「创建后绑定」通道（Agent 预设 via ctx.remote.agentPresets、
     //   权限预设 via 官方 /permission 命令 + permissions 投影读回校验）。绝不假装生效。
     const offBindings = bindSessionBindings(ctx as unknown as { get?: (k: string) => unknown; remote?: Record<string, unknown> }, getSessions)
@@ -391,6 +426,9 @@ function applyInner(ctx: LooseCtx): boolean {
     //   workspaces.list（archivedSessionIds）。workspaces 未 inject（未知服务
     //   会 park 插件）→ 运行时 try/catch 探测；不可用时诚实降级（归档标记缺）。
     const boardClient = new TaskBoardClient()
+    // V1.2-J J3：Workspace Center 的**任务面**用**同一个** host 客户端读账本
+    //   （第三方能力，非官方；缺失 ⇒ 诚实"取不到"，不当作 0 条）。
+    bindWorkspaceTaskLedgerSource(boardClient)
     const sessionsList = adaptSnapshotStore(getSessions() as { list?: unknown } | null)
     // E4-FIX-IA-2 · 工作区能力确认：archived 集改由 **workspace-catalog** 提供 —— 该目录带
     //   有界重试（见 workspace-catalog.ts），能吸收「官方 workspaces 服务晚于本插件 apply
@@ -416,6 +454,8 @@ function applyInner(ctx: LooseCtx): boolean {
     const offBind = bindTaskBoard(reconcile, boardClient)
     // IA2-2：最近面板 = 官方 sessions 真源 + reconcile archived 集（同 Home 接线模式）。
     const offRecent = bindRecentServices(getSessions, reconcile, (sessionId) => openSession(sessionId), () => void openNewTaskTab())
+    // E2：记忆树「打开会话」= 同一个官方 sessions.open 注入点（不另造跳转）。
+    const offMemoryTree = bindMemoryTreeServices((sessionId) => openSession(sessionId))
     // D5：任务详情「打开会话」= 官方 sessions.open（与 Home 同一注入点）。
     setOpenSessionForBoard((sessionId) => openSession(sessionId))
     // D3：Stop/Cancel = 官方 binding(sessionId).session.cancel()（同 ui-conversation
@@ -493,6 +533,9 @@ function applyInner(ctx: LooseCtx): boolean {
         setDetailProjectId(projectId)
         navigateMain('project-detail')
       },
+      // J3：工作区卡片里的任务「打开」= 与 Home / Project Center **同一个**任务板定位注入点
+      //   （openBoardAt：请求定位 + 切中央 Main 任务板），不另造跳转。
+      openTask: (taskId) => openBoardAt(taskId),
     })
     reconcile.bind()
     // E4-FIX-IA-2 FINAL · PHASE B：**删除 Mini Mission Control**，改为向 sidebar 广播
@@ -510,11 +553,30 @@ function applyInner(ctx: LooseCtx): boolean {
     })
 
     let registered = false
+    // V1.2-F1：ChatGPT 诚实启动器 = **真正的工具**（不是 Main-only 页面）⇒ 经第三方右栏的
+    //   **公开 API** `registerTab` 注册一个 Aux 标签（不是改它的 bundle）。第三方面板缺席时
+    //   `betterSidebarOf` 返回 null ⇒ 如实说明「未注册」，不假装有入口（也不阻塞其它接线）。
+    let disposeChatGptTab: (() => void) | null = null
     const tryRegister = (sb: {
       registerTab: (d: unknown) => unknown
       openTab?: (seed: TabSeed) => void
     }): boolean => {
       workbench = sb
+      if (disposeChatGptTab === null) {
+        try {
+          const off = sb.registerTab({
+            id: CHATGPT_TAB_ID,
+            title: CHATGPT_TAB_TITLE,
+            order: CHATGPT_TAB_ORDER,
+            single: true,
+            component: () => <ChatGptLauncher />,
+          })
+          disposeChatGptTab = typeof off === 'function' ? (off as () => void) : null
+        } catch (error) {
+          // 注册失败必须看得见（否则"入口怎么没有"会变成一个查不出的谜）。
+          console.warn('[dsh-personal-workspace] ChatGPT tab 注册失败（右栏面板 API 形态变化？）:', error)
+        }
+      }
       if (registered) return true
       try {
         // E4-FIX-IA-2 FINAL · PHASE C（§9/§10）：**Main-only 页面不再注册为 Aux 工具**。
@@ -554,6 +616,13 @@ function applyInner(ctx: LooseCtx): boolean {
     return () => {
       try {
         window.clearInterval(iv)
+      } catch {
+        // ignore
+      }
+      try {
+        // V1.2-F1：注销 ChatGPT 标签（registerTab 返回的 disposer）—— 不留下"已经消失的入口"。
+        disposeChatGptTab?.()
+        disposeChatGptTab = null
       } catch {
         // ignore
       }
@@ -619,6 +688,11 @@ function applyInner(ctx: LooseCtx): boolean {
         // ignore
       }
       try {
+        offMemoryTree()
+      } catch {
+        // ignore
+      }
+      try {
         offWsCat()
       } catch {
         // ignore
@@ -640,6 +714,16 @@ function applyInner(ctx: LooseCtx): boolean {
       }
       try {
         reconcile.dispose()
+      } catch {
+        // ignore
+      }
+      try {
+        offProjectBridge()
+      } catch {
+        // ignore
+      }
+      try {
+        mirrorPush.stop()
       } catch {
         // ignore
       }
@@ -678,6 +762,10 @@ function adaptSnapshotStore(svc: { list?: unknown } | null): { getSnapshot: () =
  * 注意：`workspaces` 已在 package.json 的 dsh.client.inject 中声明（官方
  * @deepseek-ai/dsh-api-workspace-controller），此处仍保留 try/catch —— 服务可能尚未注册
  * 或本环境未提供，返回 null = 未就绪（绝不伪造工作区）。
+ *
+ * V1.2-J J3：返回的是**完整服务对象**（不只是 `.list`）—— 目录投影只用 `list`，
+ * 而写面（workspace-actions 的 create/delete）需要同一个实例；两者的可用性各自探（方法级）。
+ * 判据仍是 `list` 可订阅（只读投影是"服务已就绪"的锚点），写面缺失时自己诚实降级。
  */
 function probeWorkspaces(ctx: LooseCtx): { list?: unknown } | null {
   try {

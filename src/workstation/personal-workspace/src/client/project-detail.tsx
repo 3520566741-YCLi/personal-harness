@@ -47,6 +47,11 @@ export const CSS_PROJECT_DETAIL = String.raw`
 .dpd-tag.fail{background:rgba(235,90,90,.14);color:#ff8a8a;}
 .dpd-tag.arch{color:var(--dsw-alias-label-tertiary,#9a9aa5);border:1px dashed var(--dsw-alias-border-l2,rgba(128,128,128,.3));}
 .dpd-tag.perm{background:rgba(240,180,60,.14);color:#e8b64c;border:1px solid rgba(240,180,60,.35);}
+/* V1.2-A §1.1：Project Detail 同样可切换 ★（真源 = 个人 lifecycle，与列表同一 API）。 */
+.dpd-star{border:none;background:transparent;cursor:pointer;font-size:15px;line-height:1;padding:0 3px;color:var(--dsw-alias-label-tertiary,#9a9aa5);border-radius:5px;flex:none;}
+.dpd-star:hover{background:color-mix(in srgb,var(--dsw-alias-bg-layer-2,rgba(128,128,128,.1)) 70%,transparent);}
+.dpd-star.on{color:#e8b64c;}
+.dpd-archtag{border:1px solid rgba(160,160,175,.4);border-radius:4px;padding:0 5px;color:#a8a8b8;font:var(--dsw-font-xxxs-11,11px);}
 .dpd-act{border:1px solid var(--dsw-alias-border-l2,rgba(128,128,128,.28));border-radius:6px;background:transparent;color:var(--dsw-alias-label-secondary,#c8c8d0);font:var(--dsw-font-xxs-12,12px);padding:2px 9px;cursor:pointer;flex:none;}
 .dpd-act:hover{background:color-mix(in srgb,var(--dsw-alias-bg-layer-2,rgba(128,128,128,.06)) 60%,transparent);}
 .dpd-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
@@ -413,6 +418,24 @@ export function ProjectDetailView(): ReactNode {
         <span className="dpd-h">
           <span className="dpd-glyph">{project.glyph}</span>
           <span>{project.name}</span>
+          <button
+            type="button"
+            className={project.starred === true ? 'dpd-star on' : 'dpd-star'}
+            data-dpd-star="1"
+            aria-pressed={project.starred === true}
+            aria-label={project.starred === true ? `取消星标：${project.name}` : `标记为重要项目：${project.name}`}
+            title={project.starred === true ? '★ 重要项目（点击取消）' : '☆ 常规项目（点击标为重要）'}
+            onClick={() => {
+              try {
+                projectRegistry.toggleStar(project.id)
+              } catch (e) {
+                setLinkMsg(e instanceof Error ? e.message : String(e))
+              }
+            }}
+          >
+            {project.starred === true ? '★' : '☆'}
+          </button>
+          {project.status === 'archived' ? <span className="dpd-archtag">已封存</span> : null}
           {project.seed ? <span className="dpd-tag arch" style={{ borderStyle: 'dashed' }}>内置</span> : null}
         </span>
       </div>

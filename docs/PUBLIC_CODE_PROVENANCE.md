@@ -5,18 +5,23 @@
   1. 逐文件检查模块引用：官方能力一律以 `@deepseek-ai/*` 裸模块名**外部引用**（宿主注入），构建时被 esbuild 标为 external；
   2. **相似度实测**：把每个被跟踪文本文件的非注释有效行，与官方包目录（`$HOME/.dsh/profiles/desktop/node_modules`，含 `@deepseek-ai/*`）中所有文本文件做行集合重合度比较，取最大值；
   3. 参考：内部审计曾标记的两类高风险文件（官方 preset 衍生模板、官方 primitives 复刻 stub）在本次导出的**允许清单中已被排除**。
-- 扫描时间：2026-09-11T18:02:35.056Z｜HEAD `a4a2092（自引用发行提交：产物内嵌短哈希 = 该提交自身短哈希）`｜对比的官方文本文件数：**7361**
+- 扫描时间：2026-09-27T07:14:34.286Z｜HEAD `bcf7e4a`｜对比的官方文本文件数：**9853**
 
 ## 逐文件最高相似度（仅列出 > 0.20 的）
 
 | 文件 | 与官方某文件的最高行重合度 | 对应官方文件 | 判定 |
 |---|---|---|---|
 | `src/workstation/personal-hud/package.json` | 75.0% | `dsh-restart-button/package.json` | FALSE POSITIVE（官方契约，见下） |
+| `src/workstation/personal-quickstop/package.json` | 75.0% | `dsh-restart-button/package.json` | FALSE POSITIVE（官方契约，见下） |
 | `src/workstation/personal-sidebar/package.json` | 75.0% | `dsh-restart-button/package.json` | FALSE POSITIVE（官方契约，见下） |
 | `src/workstation/personal-workspace/package.json` | 75.0% | `dsh-restart-button/package.json` | FALSE POSITIVE（官方契约，见下） |
-| `package-lock.json` | 28.6% | `decamelize/package.json` | UPSTREAM API ONLY / 自研 |
-| `src/workstation/personal-sidebar/src/client/styles.ts` | 27.7% | `dsh-better-sidebar/src/client/SubagentView.module.css` | UPSTREAM API ONLY / 自研 |
+| `package-lock.json` | 33.3% | `whatwg-encoding/package.json` | UPSTREAM API ONLY / 自研 |
+| `src/workstation/personal-sidebar/src/client/styles.ts` | 32.3% | `dsh-better-sidebar/src/client/SideCardSection.module.css` | UPSTREAM API ONLY / 自研 |
+| `scripts/materialize-build.mjs` | 28.6% | `tree-kill/cli.js` | UPSTREAM API ONLY / 自研 |
+| `scripts/package-release.mjs` | 28.6% | `tree-kill/cli.js` | UPSTREAM API ONLY / 自研 |
+| `scripts/test-artifacts.mjs` | 28.6% | `tree-kill/cli.js` | UPSTREAM API ONLY / 自研 |
 | `package.json` | 25.0% | `dsh-restart-button/package.json` | FALSE POSITIVE（官方契约，见下） |
+| `scripts/install.sh` | 22.2% | `tar-stream/sandbox.js` | UPSTREAM API ONLY / 自研 |
 | `src/workstation/personal-sidebar/src/client/PersonalBrowser.tsx` | 22.2% | `dsh-better-sidebar/src/client/settings-nav-icon.ts` | UPSTREAM API ONLY / 自研 |
 
 ## 分类结论
@@ -26,7 +31,7 @@
 | **OWN CODE** | 三个插件的 `src/**`、`server/index.js`、`build.mjs`、`cordis.patch.yml`、`personal-registry/src/**`、`personal-version/product.json`、`scripts/**`（本仓库新写的公开脚本） | 自研（MIT，见 `LICENSE`） |
 | **UPSTREAM API ONLY** | 所有官方能力调用：`@deepseek-ai/dsh-*`（宿主注入的 client/ui/api 服务）、官方 storages 与官方 HTTP 动作 | 只调用，不复制；未打包官方代码 |
 | **UPSTREAM COPIED** | **无**（相似度 ≥0.6 且无法解释的文件：0） | — |
-| — 其中「已解释误报」 | 3 个文件：`src/workstation/personal-hud/package.json`、`src/workstation/personal-sidebar/package.json`、`src/workstation/personal-workspace/package.json` —— 均为插件清单 JSON，重合的是官方契约键名，非代码 | 保留 |
+| — 其中「已解释误报」 | 4 个文件：`src/workstation/personal-hud/package.json`、`src/workstation/personal-quickstop/package.json`、`src/workstation/personal-sidebar/package.json`、`src/workstation/personal-workspace/package.json` —— 均为插件清单 JSON，重合的是官方契约键名，非代码 | 保留 |
 | **THIRD PARTY** | 构建期依赖 `esbuild`；测试期依赖 `jsdom`（均为 devDependency，**不进入发行产物**） | 见 `THIRD_PARTY_NOTICES.md` |
 
 ## 未随发行分发的内部资产（有意排除）
@@ -46,6 +51,7 @@
 - `@deepseek-ai/dsh-api-workspace-controller`
 - `@deepseek-ai/dsh-client-locale`
 - `@deepseek-ai/dsh-client-store`
+- `@deepseek-ai/dsh-client-ui-conversation`
 - `@deepseek-ai/dsh-client-ui-primitives`
 - `@deepseek-ai/dsh-client-ui-renderer`
 - `@deepseek-ai/dsh-client-ui-session`
