@@ -2,6 +2,38 @@
 
 本文件只记录**公开发行**的历史。内部开发过程（阶段编号、内部验收记录）不在本仓库内，也不对外表达。
 
+## v1.2.0-docs.1 — public-v1.2-docs.1（文档版：**产品功能未变**）
+
+**这是 V1.2 的文档版发行：只改文档，产品功能未变。** 与 V1.1 的 `v1.1.0-macos-docs.1` / `.2` 属于同一性质。
+
+改了什么：
+
+- **仓库首页（`README.md`）重做**：改用本项目自己的「版本地图 / 时间线」写法 —— ⚡ 5 秒结论（我想做什么 → 去哪）、🌳 版本树（谁从谁来）、🧭 版本导航（我要哪一版）、🕰️ 时间线（公开发行），并加一条「本仓库的纪律」与页内跳转导航。英文镜像 `README_EN.md` 同步重写。
+- **修掉指向不存在 tag 的引用**：文档原写「V1.1 发行 tag `v1.1.0`」，但**本公开仓库没有 `v1.1.0` 这个 tag**（那是内部私有冻结仓的 tag）；已全部改为公开仓真实存在的 **`v1.1.0-macos`**。
+- **公开仓历史如实说明**：本仓库的提交历史**不是一条单链** —— `v1.1.0-macos`（`3f22753`）与 `v1.1.0-macos-docs.1`（`07086fe`）是**各自独立的根提交**，只能通过它们自己的 tag 取到；`main` 的线自 `v1.1.0-macos-docs.2`（`a4a2092`）延伸。已登记进 [docs/PUBLIC_V1_2_RELEASE_AUDIT.md](docs/PUBLIC_V1_2_RELEASE_AUDIT.md)（D7 / D8）与本版提交信息。
+- **审计补记 A9**：对**发行包内部**做了独立核对（本仓库的扫描器只读文本文件，**不解析 `.tgz`**），并把这个工具缺口如实登记；详见 [docs/PUBLIC_V1_2_RELEASE_AUDIT.md](docs/PUBLIC_V1_2_RELEASE_AUDIT.md) A9。
+
+**产品未变（可核对）**：
+
+- `src/**`（插件源码）**逐字节未改**；
+- `scripts/install.sh` / `uninstall.sh` / `rollback.sh` **逐字节未改**（装机行为不变）；
+- 发行产物按既有流程**重新构建**（未手改一个字节）：与 `public-v1.2` 的资产相比，`dsh-personal-hud` 与 `dsh-personal-quickstop` 的 `.tgz` **逐字节相同**（这两个包的产物不含内嵌短哈希字面量）；`dsh-personal-sidebar` 与 `dsh-personal-workspace` 的差异**只有内嵌的那个短哈希字面量本身**（各 1 行），产品代码无其他变化。上一次 V1.2 发行（`public-v1.2`）的 Release 与资产**保留、不覆盖**。
+
+产物哈希（`client.js` 的 sha256，实测回填；完整值见 `manifest.json`）：
+
+| 包 | 版本 | 公开 `sha256(client.js)` | 与内部冻结版的关系 |
+|---|---|---|---|
+| dsh-personal-sidebar | 0.1.28 | `42bbb753c5cf41c8…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+| dsh-personal-workspace | 0.1.25 | `05c64f5829fbbc5d…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+| dsh-personal-hud | 0.1.3 | `56afe08499d2f585…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+| dsh-personal-quickstop | 0.1.1 | `ba9748698e0b7c9b…` | 与内部版差异见 [docs/PUBLIC_SANITIZATION_REPORT.md](docs/PUBLIC_SANITIZATION_REPORT.md) |
+
+本版本是**自引用发行提交**：`packages/*.tgz` 内嵌的短提交哈希（`8838cdb`）== 包含它们的那个提交自身的短哈希。`npm run verify` 会强制核验，不一致即失败。
+
+发行范围：**仅 macOS**（同 V1.2）。
+
+---
+
 ## v1.2.0 — public-v1.2（macOS）
 
 **定位：功能最全，但未做系统性验收。** V1.2 是「功能最全、但没有做过系统性验收」的版本，它**带有若干已知问题**，这些问题**计划在 V1.3 修复**；完整清单（现象 / 影响面 / 当前状态 / 规避方式）见 [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)。**要稳定请用 V1.1（发行 git tag `v1.1.0-macos`）；要功能最全并接受已知问题，用 V1.2（本次发行，git tag `public-v1.2`）。**
